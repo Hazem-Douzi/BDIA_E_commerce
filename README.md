@@ -1,5 +1,9 @@
  E-Commerce Platform
+
+ 
 1/description:
+
+
 We are building a complete e-commerce web platform where users can interact as clients (buyers) or as sellers, and where the system also provides an admin dashboard for global management.The platform contains multiple categories, each with sub-categories, and each sub-category contains products from different sellers.
 2/👤 User Types
 1. Client (Buyer)
