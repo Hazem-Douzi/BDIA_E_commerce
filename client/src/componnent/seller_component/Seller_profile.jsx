@@ -91,7 +91,6 @@ const SellerHome = ({handleSelectedSeller}) => {
             <p><span className="font-semibold">Phone:</span> {user.phoneNumber}</p>
           </div>
           <div className="space-y-3">
-            <p><span className="font-semibold">Age:</span> {user.age}</p>
             <p><span className="font-semibold">Address:</span> {user.address}</p>
           </div>
         </div>
