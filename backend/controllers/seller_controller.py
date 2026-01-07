@@ -1,137 +1,156 @@
 import bcrypt
 from flask import jsonify
-from backend import db
-from backend.models import User, SellerProfile, Product, Order, OrderItem
+from backend.database.dao import users as users_dao
+from backend.database.dao import seller_profiles as seller_profiles_dao
+from backend.database.dao import products as products_dao
+from backend.database.dao import orders as orders_dao
+from backend.controllers.serializers import (
+    user_to_dict,
+    seller_profile_to_dict,
+    order_to_dict,
+    order_item_to_dict,
+    product_to_dict,
+)
+
 
 def get_seller_profile(seller_id):
-    """Récupère le profil d'un vendeur"""
+    """Get seller profile."""
     try:
-        seller = User.query.get(seller_id)
-        if not seller or seller.rolee != 'seller':
-            return jsonify({'message': 'Seller not found'}), 404
-        
-        seller_dict = seller.to_dict()
-        if seller.seller_profile:
-            seller_dict['seller_profile'] = seller.seller_profile.to_dict()
-        
-        # Statistiques du vendeur
-        products = Product.query.filter_by(id_seller=seller_id).all()
-        seller_dict['stats'] = {
-            'total_products': len(products),
-            'verified': seller.seller_profile.verification_status == 'verified' if seller.seller_profile else False
+        seller = users_dao.get_user_by_id(seller_id)
+        if not seller or seller["rolee"] != "seller":
+            return jsonify({"message": "Seller not found"}), 404
+
+        seller_dict = user_to_dict(seller)
+        profile = seller_profiles_dao.get_profile_by_user_id(seller_id)
+        if profile:
+            seller_dict["seller_profile"] = seller_profile_to_dict(profile)
+
+        products = products_dao.list_products_by_seller(seller_id)
+        seller_dict["stats"] = {
+            "total_products": len(products),
+            "verified": profile["verification_status"] == "verified" if profile else False,
         }
-        
         return jsonify(seller_dict), 200
     except Exception as error:
-        return jsonify({'message': str(error)}), 500
+        return jsonify({"message": str(error)}), 500
+
 
 def update_seller_profile(seller_id, data):
-    """Met à jour le profil d'un vendeur"""
+    """Update seller profile."""
     try:
-        seller = User.query.get(seller_id)
-        if not seller or seller.rolee != 'seller':
-            return jsonify({'message': 'Seller not found'}), 404
-        
-        # Mettre à jour les informations utilisateur
-        if 'full_name' in data:
-            seller.full_name = data['full_name']
-        if 'phone' in data:
-            seller.phone = data['phone']
-        if 'adress' in data:
-            seller.adress = data['adress']
-        if 'email' in data:
-            # Vérifier que l'email n'est pas déjà utilisé
-            existing = User.query.filter_by(email=data['email']).first()
-            if existing and existing.id_user != seller_id:
-                return jsonify({'message': 'Email already in use'}), 400
-            seller.email = data['email']
-        if 'password' in data and data['password']:
-            seller.pass_word = bcrypt.hashpw(
-                data['password'].encode('utf-8'),
-                bcrypt.gensalt(10)
-            ).decode('utf-8')
-        
-        # Créer ou mettre à jour le profil seller
-        if not seller.seller_profile:
-            seller_profile = SellerProfile(
-                id_user=seller_id,
-                shop_name=data.get('shop_name', f"{seller.full_name}'s Shop"),
-                shop_description=data.get('shop_description', ''),
-                verification_status='pending'
+        seller = users_dao.get_user_by_id(seller_id)
+        if not seller or seller["rolee"] != "seller":
+            return jsonify({"message": "Seller not found"}), 404
+
+        update_fields = {}
+        if "full_name" in data:
+            update_fields["full_name"] = data["full_name"]
+        if "phone" in data:
+            update_fields["phone"] = data["phone"]
+        if "adress" in data:
+            update_fields["adress"] = data["adress"]
+        if "email" in data:
+            existing = users_dao.get_user_by_email(data["email"])
+            if existing and existing["id_user"] != seller_id:
+                return jsonify({"message": "Email already in use"}), 400
+            update_fields["email"] = data["email"]
+        if "password" in data and data["password"]:
+            update_fields["pass_word"] = bcrypt.hashpw(
+                data["password"].encode("utf-8"), bcrypt.gensalt(10)
+            ).decode("utf-8")
+
+        if update_fields:
+            users_dao.update_user(seller_id, update_fields)
+
+        profile = seller_profiles_dao.get_profile_by_user_id(seller_id)
+        if not profile:
+            seller_profiles_dao.create_profile(
+                seller_id,
+                data.get("shop_name", f"{seller['full_name']}'s Shop"),
+                data.get("shop_description", ""),
+                "pending",
             )
-            db.session.add(seller_profile)
         else:
-            if 'shop_name' in data:
-                seller.seller_profile.shop_name = data['shop_name']
-            if 'shop_description' in data:
-                seller.seller_profile.shop_description = data['shop_description']
-        
-        db.session.commit()
-        
-        seller_dict = seller.to_dict()
-        if seller.seller_profile:
-            seller_dict['seller_profile'] = seller.seller_profile.to_dict()
-        
-        return jsonify({'message': 'Seller profile updated successfully', 'seller': seller_dict}), 200
+            profile_fields = {}
+            if "shop_name" in data:
+                profile_fields["shop_name"] = data["shop_name"]
+            if "shop_description" in data:
+                profile_fields["shop_description"] = data["shop_description"]
+            if profile_fields:
+                seller_profiles_dao.update_profile(seller_id, profile_fields)
+
+        seller = users_dao.get_user_by_id(seller_id)
+        profile = seller_profiles_dao.get_profile_by_user_id(seller_id)
+        seller_dict = user_to_dict(seller)
+        if profile:
+            seller_dict["seller_profile"] = seller_profile_to_dict(profile)
+        return jsonify({"message": "Seller profile updated successfully", "seller": seller_dict}), 200
     except Exception as error:
-        db.session.rollback()
-        return jsonify({'message': str(error)}), 500
+        return jsonify({"message": str(error)}), 500
+
 
 def get_seller_orders(seller_id):
-    """Récupère toutes les commandes contenant les produits du vendeur"""
+    """Get orders for seller's products."""
     try:
-        # Récupérer tous les produits du vendeur
-        products = Product.query.filter_by(id_seller=seller_id).all()
-        product_ids = [p.id_product for p in products]
-        
-        # Récupérer tous les order_items pour ces produits
-        order_items = OrderItem.query.filter(OrderItem.id_product.in_(product_ids)).all()
-        order_ids = list(set([item.id_order for item in order_items]))
-        
-        # Récupérer les commandes
-        orders = Order.query.filter(Order.id_order.in_(order_ids)).order_by(Order.order_createdAt.desc()).all()
-        
+        products = products_dao.list_products_by_seller(seller_id)
+        product_ids = [product["id_product"] for product in products]
+        order_items = orders_dao.list_order_items_by_products(product_ids)
+        order_ids = list({item["id_order"] for item in order_items})
+        orders = orders_dao.list_orders_by_ids(order_ids)
+
         result = []
         for order in orders:
-            order_dict = order.to_dict()
-            # Filtrer seulement les items du vendeur
-            seller_items = [item for item in order.items if item.id_product in product_ids]
-            order_dict['items'] = []
+            order_dict = order_to_dict(order)
+            seller_items = [item for item in order_items if item["id_order"] == order["id_order"]]
+            order_dict["items"] = []
             for item in seller_items:
-                item_dict = item.to_dict()
-                if item.product:
-                    item_dict['product'] = item.product.to_dict()
-                order_dict['items'].append(item_dict)
-            
-            # Calculer le total pour ce vendeur
-            seller_total = sum(float(item.order_item_price) * item.order_item_quantity for item in seller_items)
-            order_dict['seller_total'] = seller_total
-            
-            if order.client_user:
-                order_dict['client'] = order.client_user.to_dict()
+                item_dict = order_item_to_dict(item)
+                product = next(
+                    (p for p in products if p["id_product"] == item["id_product"]),
+                    None,
+                )
+                if product:
+                    item_dict["product"] = product_to_dict(product)
+                order_dict["items"].append(item_dict)
+
+            seller_total = sum(
+                (item["order_item_price"] or 0) * item["order_item_quantity"]
+                for item in seller_items
+            )
+            order_dict["seller_total"] = float(seller_total)
+
+            client = users_dao.get_user_by_id(order["id_client"])
+            if client:
+                order_dict["client"] = user_to_dict(client)
             result.append(order_dict)
-        
+
         return jsonify(result), 200
-    except Exception as e:
-        return jsonify({'message': str(e)}), 500
+    except Exception as error:
+        return jsonify({"message": str(error)}), 500
+
 
 def get_seller_stats(seller_id):
-    """Récupère les statistiques du vendeur"""
+    """Get seller statistics."""
     try:
-        products = Product.query.filter_by(id_seller=seller_id).all()
-        product_ids = [p.id_product for p in products]
-        
-        order_items = OrderItem.query.filter(OrderItem.id_product.in_(product_ids)).all()
-        orders = Order.query.filter(Order.id_order.in_(list(set([item.id_order for item in order_items])))).all()
-        
+        products = products_dao.list_products_by_seller(seller_id)
+        product_ids = [product["id_product"] for product in products]
+        order_items = orders_dao.list_order_items_by_products(product_ids)
+        order_ids = list({item["id_order"] for item in order_items})
+        orders = orders_dao.list_orders_by_ids(order_ids)
+
+        total_revenue = 0
+        for item in order_items:
+            order = next((o for o in orders if o["id_order"] == item["id_order"]), None)
+            if order and order["payment_status"] == "paid":
+                total_revenue += (item["order_item_price"] or 0) * item["order_item_quantity"]
+
         stats = {
-            'total_products': len(products),
-            'total_orders': len(orders),
-            'total_revenue': sum(float(item.order_item_price) * item.order_item_quantity for item in order_items if item.order.payment_status == 'paid'),
-            'pending_orders': len([o for o in orders if o.order_status == 'processing']),
-            'delivered_orders': len([o for o in orders if o.order_status == 'delivered'])
+            "total_products": len(products),
+            "total_orders": len(orders),
+            "total_revenue": float(total_revenue),
+            "pending_orders": len([o for o in orders if o["order_status"] == "processing"]),
+            "delivered_orders": len([o for o in orders if o["order_status"] == "delivered"]),
         }
-        
         return jsonify(stats), 200
-    except Exception as e:
-        return jsonify({'message': str(e)}), 500
+    except Exception as error:
+        return jsonify({"message": str(error)}), 500

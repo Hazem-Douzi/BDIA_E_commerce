@@ -1,21 +1,13 @@
 from flask import Flask
-from flask_sqlalchemy import SQLAlchemy
-from flask_migrate import Migrate
 from flask_cors import CORS
 from backend.config import Config
-
-# Initialisation des extensions
-db = SQLAlchemy()
-migrate = Migrate()
+from backend.database.connection import get_db_manager
 
 def create_app(config_class=Config):
     """Application factory pour Flask"""
     app = Flask(__name__)
     app.config.from_object(config_class)
     
-    # Initialisation des extensions
-    db.init_app(app)
-    migrate.init_app(app, db)
     CORS(app, resources={
         r"/api/*": {
             "origins": app.config['CORS_ORIGINS']
@@ -46,6 +38,11 @@ def create_app(config_class=Config):
     app.register_blueprint(review_routes.bp, url_prefix='/api/review')
     app.register_blueprint(payment_routes.bp, url_prefix='/api/payment')
     app.register_blueprint(category_routes.bp, url_prefix='/api/category')
+
+    @app.teardown_appcontext
+    def close_db_connection(exception=None):
+        del exception
+        get_db_manager().close_connection()
     
     # Route pour servir les fichiers uploads
     @app.route('/uploads/<path:filename>')
