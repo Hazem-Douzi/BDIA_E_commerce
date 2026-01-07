@@ -77,19 +77,8 @@ JWT_SECRET=your-jwt-secret-key-here
 - For production, use strong, randomly generated secrets
 
 **Generate a Secure JWT Secret:**
-
-The project includes a script to generate a secure JWT secret. Simply run:
-
-```bash
-python generate_jwt_secret.py
-```
-
-This will generate a secure random JWT secret and display it with instructions on how to add it to your `.env` file.
-
-**Alternative methods** (if you prefer):
-
-Using Python directly:
 ```python
+# Run this in Python to generate a secure JWT secret
 import secrets
 print(secrets.token_urlsafe(32))
 ```
