@@ -7,7 +7,6 @@ export default function Add_product({fetchProducts}) {
 
 
   const navigate = useNavigate();
-const [sellerId, setSellerId] = useState("");
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [state, setState] = useState("");
@@ -21,41 +20,43 @@ const [sellerId, setSellerId] = useState("");
   const [promo, setPromo] = useState(0.0);
   const [delivered, setDelivered] = useState(false);
   const [image, setimage] = useState([]);
-  const [category, setCategorie] = useState("");
+  const [categories, setCategories] = useState([]);
+  const [categoryId, setCategoryId] = useState("");
 
-useEffect(() => {
-  const fetchId = async () => {
-    const res = await axios.get(
-      `http://localhost:8080/api/seller/${JSON.parse(localStorage.getItem("user")).id}`
-    );
-    setSellerId(res.data.id);
-  };
-
-  fetchId();
-}, []);
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const res = await axios.get("http://127.0.0.1:8080/api/category");
+        setCategories(res.data || []);
+      } catch (error) {
+        console.error("Failed to load categories:", error);
+      }
+    };
+    fetchCategories();
+  }, []);
 
   const saveProduct = async () => {
     try {
-     const productRes = await axios.post(
-  "http://127.0.0.1:8080/api/product/add",
-  {
-    name,
-    description,
-    state,
-    date,
-    price,
-    available,
-    brand,
-    rate,
-    quantity,
-    negociable,
-    promo,
-    delivered,
-    image,
-    category,
-    sellerId, 
-  }
-);
+      const token = localStorage.getItem("token");
+      await axios.post(
+        "http://127.0.0.1:8080/api/product/add",
+        {
+          product_name: name,
+          product_description: description,
+          price,
+          stock: quantity,
+          rating: rate,
+          brand,
+          id_category: categoryId ? parseInt(categoryId, 10) : null,
+          images: image ? [image] : [],
+        },
+        {
+          headers: {
+            Authorization: token ? `Bearer ${token}` : undefined,
+            "Content-Type": "application/json",
+          },
+        }
+      );
 
 
 
@@ -66,6 +67,7 @@ useEffect(() => {
   };
 
   const handleSubmit = (e) => {
+    e.preventDefault();
     saveProduct();
     fetchProducts()
     navigate("/Home_seller/my_products")
@@ -143,24 +145,24 @@ useEffect(() => {
                 required
               />
             </div>
-<div>
-  <label className="block text-sm font-medium text-gray-700">
-    Product Category
-  </label>
-  <select
-    value={category}
-    onChange={(e) => setCategorie(e.target.value)}
-    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
-    required
-  >
-    <option value="">Select a category</option>
-    <option value="Laptop">Laptop</option>
-    <option value="Phone">Phone</option>
-    <option value="TV">TV</option>
-    <option value="Accessories">Accessories</option>
-    <option value="Others">Others</option>
-  </select>
-</div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700">
+                Category
+              </label>
+              <select
+                value={categoryId}
+                onChange={(e) => setCategoryId(e.target.value)}
+                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+                required
+              >
+                <option value="">Select a category</option>
+                {categories.map((cat) => (
+                  <option key={cat.id_category} value={cat.id_category}>
+                    {cat.category_name}
+                  </option>
+                ))}
+              </select>
+            </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-700">

@@ -4,8 +4,7 @@ import axios from "axios"
 
 export default function ProductList({ handleselectedProd }) {
   const navigate = useNavigate();
-  const [sellerId, setSellerId] = useState("");
-    const [products, setProducts] = useState([]);
+  const [products, setProducts] = useState([]);
     // const[selectedImg,setSelectedImg]=useState([])
   const handleMyProducts = () => navigate("/Home_seller/my_products");
   const handleAddProduct = () => navigate("/Home_seller/add_product");
@@ -17,21 +16,15 @@ export default function ProductList({ handleselectedProd }) {
     delete axios.defaults.headers.common["Authorization"];
     navigate("/");
   };
-useEffect(() => {
-  const fetchId = async () => {
-    const res = await axios.get(
-      `http://localhost:8080/api/seller/${JSON.parse(localStorage.getItem("user")).id}`
-    );
-    setSellerId(res.data.id);
-  };
-
-  fetchId();
-}, []);
-console.log("sellerId",sellerId)
 const fetchProducts = async () => {
   try {
-    const res = await axios.get(`http://127.0.0.1:8080/api/product/spec/${sellerId}`);
-    setProducts(res.data);
+    const user = JSON.parse(localStorage.getItem("user") || "{}");
+    if (!user.id) {
+      setProducts([]);
+      return;
+    }
+    const res = await axios.get(`http://127.0.0.1:8080/api/product/spec/${user.id}`);
+    setProducts(res.data || []);
   } catch (error) {
     console.log("Error:", error.message);
   }
@@ -39,10 +32,8 @@ const fetchProducts = async () => {
 
 
 useEffect(() => {
-  if (sellerId) {
-    fetchProducts();
-  }
-}, [sellerId]);
+  fetchProducts();
+}, []);
 
 //  const getImages=(productsId)=>{
 //     axios.get(`http://localhost:8080/api/photos/${productsId}`)
@@ -105,16 +96,16 @@ useEffect(() => {
 
           <div className="grid grid-cols-1 gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 xl:gap-x-8">
             {products.map((product) => (
-              <div key={product.id} className="group border p-2 rounded-lg shadow-sm">
+              <div key={product.id_product} className="group border p-2 rounded-lg shadow-sm">
                 {/* Show first image */}
                 {console.log(product)}
                 <img
-                  alt={product.name}
-                  src={product.image}
+                  alt={product.product_name}
+                  src={product.images?.[0]?.imageURL}
                   className="aspect-square w-full rounded-lg bg-gray-200 object-cover group-hover:opacity-75 xl:aspect-7/8"
                 />
                 
-                <h3 className="mt-4 text-sm text-gray-700">{product.name}</h3>
+                <h3 className="mt-4 text-sm text-gray-700">{product.product_name}</h3>
                 <p className="mt-1 text-lg font-medium text-gray-900">${product.price}</p>
 
                 {/* Details Link */}

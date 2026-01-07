@@ -38,6 +38,7 @@ const Login = () => {;
     }
 
     setIsLoading(true);
+    setErrors({});
     
     try {
       const response = await axios.post('http://127.0.0.1:8080/api/auth/login', {
@@ -72,6 +73,14 @@ if (role === 'admin') {
       }
     } catch (error) {
       console.error('Login error:', error);
+      const status = error?.response?.status;
+      let message = error?.response?.data?.message || 'Login failed';
+      if (status === 401) {
+        message = 'Email or password is incorrect';
+      } else if (status === 404) {
+        message = 'Account does not exist';
+      }
+      setErrors({ general: message });
       setIsLoading(false);
     }
   };

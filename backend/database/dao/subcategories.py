@@ -33,6 +33,14 @@ def get_subcategory(subcategory_id):
     return get_db_manager().execute_query(query, (subcategory_id,), fetch_one=True)
 
 
+def get_subcategory_by_name(name):
+    query = (
+        "SELECT id_SubCategory, SubCategory_name, id_category, SubCategory_description "
+        "FROM SubCategory WHERE SubCategory_name = %s"
+    )
+    return get_db_manager().execute_query(query, (name,), fetch_one=True)
+
+
 def update_subcategory(subcategory_id, fields):
     if not fields:
         return 0
@@ -45,4 +53,3 @@ def update_subcategory(subcategory_id, fields):
 def delete_subcategory(subcategory_id):
     query = "DELETE FROM SubCategory WHERE id_SubCategory = %s"
     return get_db_manager().execute_query(query, (subcategory_id,), commit=True)
-

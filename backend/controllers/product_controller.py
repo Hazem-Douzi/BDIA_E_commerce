@@ -2,14 +2,12 @@ from flask import jsonify, current_app
 import os
 from backend.database.dao import products as products_dao
 from backend.database.dao import product_images as images_dao
-from backend.database.dao import subcategories as subcategories_dao
 from backend.database.dao import categories as categories_dao
 from backend.database.dao import users as users_dao
 from backend.database.dao import seller_profiles as seller_profiles_dao
 from backend.controllers.serializers import (
     product_to_dict,
     product_image_to_dict,
-    subcategory_to_dict,
     category_to_dict,
     user_to_dict,
     seller_profile_to_dict,
@@ -21,10 +19,8 @@ def _build_product_details(product):
     images = images_dao.list_images_by_product(product["id_product"])
     product_dict["images"] = [product_image_to_dict(img) for img in images]
 
-    subcategory = subcategories_dao.get_subcategory(product["id_SubCategory"])
-    if subcategory:
-        product_dict["subcategory"] = subcategory_to_dict(subcategory)
-        category = categories_dao.get_category(subcategory["id_category"])
+    if product.get("id_category"):
+        category = categories_dao.get_category(product["id_category"])
         if category:
             product_dict["category"] = category_to_dict(category)
 
@@ -69,9 +65,10 @@ def get_all_products_by_seller(seller_id):
             product_dict = product_to_dict(product)
             images = images_dao.list_images_by_product(product["id_product"])
             product_dict["images"] = [product_image_to_dict(img) for img in images]
-            subcategory = subcategories_dao.get_subcategory(product["id_SubCategory"])
-            if subcategory:
-                product_dict["subcategory"] = subcategory_to_dict(subcategory)
+            if product.get("id_category"):
+                category = categories_dao.get_category(product["id_category"])
+                if category:
+                    product_dict["category"] = category_to_dict(category)
             result.append(product_dict)
         return jsonify(result), 200
     except Exception as error:
@@ -82,6 +79,11 @@ def add_product(data, seller_id):
     """Add a new product."""
     try:
         data = dict(data)
+        if not data.get("id_category") and data.get("category_name"):
+            category = categories_dao.get_category_by_name(data["category_name"])
+            if not category:
+                return jsonify({"message": "Category not found"}), 400
+            data["id_category"] = category["id_category"]
         data["id_seller"] = seller_id
         product_id = products_dao.create_product(data)
 
@@ -92,7 +94,10 @@ def add_product(data, seller_id):
 
         product = products_dao.get_product(product_id)
         product_dict = product_to_dict(product)
-        product_dict["images"] = [product_image_to_dict(img) for img in images_dao.list_images_by_product(product_id)]
+        product_dict["images"] = [
+            product_image_to_dict(img)
+            for img in images_dao.list_images_by_product(product_id)
+        ]
         return jsonify({"message": "Product added successfully", "product": product_dict}), 201
     except Exception as error:
         return jsonify({"message": str(error)}), 400
@@ -111,7 +116,10 @@ def delete_product(product_id, seller_id=None):
         images = images_dao.list_images_by_product(product_id)
         for image in images:
             if image["imageURL"]:
-                image_path = os.path.join(current_app.config["UPLOAD_FOLDER"], os.path.basename(image["imageURL"]))
+                image_path = os.path.join(
+                    current_app.config["UPLOAD_FOLDER"],
+                    os.path.basename(image["imageURL"]),
+                )
                 if os.path.exists(image_path):
                     try:
                         os.remove(image_path)
@@ -143,7 +151,7 @@ def update_product(product_id, data, seller_id=None):
             "price",
             "stock",
             "rating",
-            "id_SubCategory",
+            "id_category",
         ]:
             if key in data:
                 update_fields[key] = data[key]
@@ -155,7 +163,10 @@ def update_product(product_id, data, seller_id=None):
             existing_images = images_dao.list_images_by_product(product_id)
             for image in existing_images:
                 if image["imageURL"]:
-                    image_path = os.path.join(current_app.config["UPLOAD_FOLDER"], os.path.basename(image["imageURL"]))
+                    image_path = os.path.join(
+                        current_app.config["UPLOAD_FOLDER"],
+                        os.path.basename(image["imageURL"]),
+                    )
                     if os.path.exists(image_path):
                         try:
                             os.remove(image_path)
@@ -168,7 +179,10 @@ def update_product(product_id, data, seller_id=None):
 
         product = products_dao.get_product(product_id)
         product_dict = product_to_dict(product)
-        product_dict["images"] = [product_image_to_dict(img) for img in images_dao.list_images_by_product(product_id)]
+        product_dict["images"] = [
+            product_image_to_dict(img)
+            for img in images_dao.list_images_by_product(product_id)
+        ]
         return jsonify({"message": "Product updated successfully", "product": product_dict}), 200
     except Exception as error:
         return jsonify({"message": str(error)}), 400
@@ -192,17 +206,11 @@ def search_products(query_params):
 
         category = query_params.get("category")
         if category:
-            subcategories = subcategories_dao.list_subcategories()
-            matching_ids = [
-                sub["id_SubCategory"]
-                for sub in subcategories
-                if category.lower() in sub["SubCategory_name"].lower()
-            ]
-            if not matching_ids:
+            matched = categories_dao.get_category_by_name(category)
+            if not matched:
                 return jsonify([]), 200
-            placeholders = ", ".join(["%s"] * len(matching_ids))
-            conditions.append(f"id_SubCategory IN ({placeholders})")
-            params.extend(matching_ids)
+            conditions.append("id_category = %s")
+            params.append(matched["id_category"])
 
         min_price = query_params.get("minPrice")
         max_price = query_params.get("maxPrice")
@@ -216,10 +224,10 @@ def search_products(query_params):
             conditions.append("price <= %s")
             params.append(float(max_price))
 
-        subcategory_id = query_params.get("subcategory")
-        if subcategory_id:
-            conditions.append("id_SubCategory = %s")
-            params.append(int(subcategory_id))
+        category_id = query_params.get("category_id")
+        if category_id:
+            conditions.append("id_category = %s")
+            params.append(int(category_id))
 
         stock = query_params.get("stock")
         if stock:
@@ -234,9 +242,10 @@ def search_products(query_params):
             product_dict = product_to_dict(product)
             images = images_dao.list_images_by_product(product["id_product"])
             product_dict["images"] = [product_image_to_dict(img) for img in images]
-            subcategory = subcategories_dao.get_subcategory(product["id_SubCategory"])
-            if subcategory:
-                product_dict["subcategory"] = subcategory_to_dict(subcategory)
+            if product.get("id_category"):
+                category = categories_dao.get_category(product["id_category"])
+                if category:
+                    product_dict["category"] = category_to_dict(category)
             result.append(product_dict)
 
         return jsonify(result), 200

@@ -49,7 +49,7 @@ def product_to_dict(row):
         "stock": row.get("stock"),
         "rating": row.get("rating"),
         "id_seller": row.get("id_seller"),
-        "id_SubCategory": row.get("id_SubCategory"),
+        "id_category": row.get("id_category"),
         "createdAtt": to_iso(row.get("createdAtt")),
         "updatedAt": to_iso(row.get("updatedAt")),
     }
@@ -147,4 +147,3 @@ def seller_profile_to_dict(row):
         "shop_description": row.get("shop_description"),
         "verification_status": row.get("verification_status"),
     }
-

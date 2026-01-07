@@ -1,5 +1,6 @@
 import jwt
 import bcrypt
+import logging
 from flask import jsonify, current_app
 from backend.database.dao import users as users_dao
 from backend.database.dao import seller_profiles as seller_profiles_dao
@@ -56,9 +57,18 @@ def login_user(data):
     try:
         user = users_dao.get_user_by_email(email)
         if not user:
-            return jsonify({"message": "Invalid credentials"}), 401
+            return jsonify({"message": "Account does not exist"}), 404
 
-        if not bcrypt.checkpw(password.encode("utf-8"), user["pass_word"].encode("utf-8")):
+        try:
+            password_ok = bcrypt.checkpw(
+                password.encode("utf-8"),
+                user["pass_word"].encode("utf-8"),
+            )
+        except Exception:
+            logging.getLogger(__name__).exception("Password verification failed")
+            return jsonify({"message": "Authentication error"}), 500
+
+        if not password_ok:
             return jsonify({"message": "Invalid credentials"}), 401
 
         from datetime import datetime, timedelta
@@ -85,4 +95,5 @@ def login_user(data):
             "role": user["rolee"],
         }), 200
     except Exception as error:
+        logging.getLogger(__name__).exception("Login failed")
         return jsonify({"message": str(error)}), 500

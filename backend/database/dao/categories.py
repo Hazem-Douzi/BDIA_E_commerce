@@ -22,6 +22,14 @@ def get_category(category_id):
     return get_db_manager().execute_query(query, (category_id,), fetch_one=True)
 
 
+def get_category_by_name(name):
+    query = (
+        "SELECT id_category, category_name, category_description, image "
+        "FROM category WHERE category_name = %s"
+    )
+    return get_db_manager().execute_query(query, (name,), fetch_one=True)
+
+
 def update_category(category_id, fields):
     if not fields:
         return 0
@@ -34,4 +42,3 @@ def update_category(category_id, fields):
 def delete_category(category_id):
     query = "DELETE FROM category WHERE id_category = %s"
     return get_db_manager().execute_query(query, (category_id,), commit=True)
-
