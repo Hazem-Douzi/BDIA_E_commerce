@@ -322,6 +322,7 @@ export default function Add_product({fetchProducts}) {
                 </label>
                 <input
                   type="number"
+                  min="1"
                   value={quantity}
                   onChange={(e) => setQuantity(parseInt(e.target.value))}
                   className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
