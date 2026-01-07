@@ -1,6 +1,7 @@
 const PORT = 8080;
 const express = require("express");
-require('dotenv').config();
+const path = require("path");
+require("dotenv").config({ path: path.resolve(__dirname, "../.env") });
 const cors = require("cors");
 const authRoutes = require("./routes/Auth-route");
 const app = express();

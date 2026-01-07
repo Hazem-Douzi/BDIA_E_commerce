@@ -74,7 +74,8 @@ const Login = () => {
     } catch (error) {
       console.error('Login error:', error);
       const status = error?.response?.status;
-      let message = error?.response?.data?.message || 'Login failed';
+      const data = error?.response?.data;
+      let message = typeof data === 'string' ? data : data?.message || 'Login failed';
       if (status === 401) {
         message = 'Email or password is incorrect';
       } else if (status === 404) {

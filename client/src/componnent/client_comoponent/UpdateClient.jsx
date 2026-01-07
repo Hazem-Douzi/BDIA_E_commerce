@@ -7,33 +7,37 @@ import '../../App.css';
 
 export default function UpdateSeller({selectedClient}) {
   const navigate = useNavigate();
-const [fullName, setFullName] = useState(selectedClient.fullName );
-const [email, setEmail] = useState(selectedClient.email);
-const [age, setAge] = useState(selectedClient.age );
-const [phoneNumber, setPhoneNumber] = useState(selectedClient.phoneNumber);
-const [address, setAddress] = useState(selectedClient.address );
-const [picture, setPicture] = useState(selectedClient.picture );
+const [fullName, setFullName] = useState(selectedClient?.fullName || "");
+const [email, setEmail] = useState(selectedClient?.email || "");
+const [phoneNumber, setPhoneNumber] = useState(selectedClient?.phoneNumber || "");
+const [address, setAddress] = useState(selectedClient?.address || "");
+const [picture, setPicture] = useState(selectedClient?.picture || "");
 const [password, setPassword] = useState("")
 
 console.log("selectedClient",selectedClient)
 
   const saveclient = async () => {
     try {
+      const token = localStorage.getItem("token");
       const data = {
-        fullName,
-        age,
-        phoneNumber,
+        full_name: fullName,
+        phone: phoneNumber,
+        adress: address,
         email,
-        address,
-        picture,
       };
 
-if (password) data.password = password;
+      if (password) data.password = password;
 
-await axios.patch(
-  `http://127.0.0.1:8080/api/client/update/${selectedClient.id}`,
-  data
-);
+      await axios.put(
+        "http://127.0.0.1:8080/api/client/profile",
+        data,
+        {
+          headers: {
+            Authorization: token ? `Bearer ${token}` : undefined,
+            "Content-Type": "application/json",
+          },
+        }
+      );
     } catch (error) {
       console.error("Error:", error.message);
     }
@@ -154,20 +158,6 @@ await axios.patch(
                 </div>
 
                 {/* Age */}
-                <div className="update-form-group">
-                  <label className="update-form-label">
-                    Age
-                  </label>
-                  <input
-                    type="number"
-                    value={age}
-                    onChange={(e) => setAge(e.target.value)}
-                    className="update-form-input"
-                    placeholder="Enter your age"
-                    min="18"
-                    max="120"
-                  />
-                </div>
 
                 {/* Phone Number */}
                 <div className="update-form-group">
