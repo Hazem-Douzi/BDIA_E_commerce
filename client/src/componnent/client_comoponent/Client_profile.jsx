@@ -7,7 +7,6 @@ const ClientProfile = ({handleSelectedClient}) => {
   const navigate = useNavigate();
 const [fullName, setFullName] = useState('');
 const [email, setEmail] = useState('');
-const [age, setAge] = useState('');
 const [phoneNumber, setPhoneNumber] = useState('');
 const [address, setAddress] = useState('');
 const [picture, setPicture] = useState('');
@@ -19,23 +18,31 @@ useEffect(() => {
   const fetchClientData = async () => {
     try {
       const storedUser = localStorage.getItem('user');
-      const userData = JSON.parse(storedUser);
+      if (!storedUser) return navigate('/');
+
       const token = localStorage.getItem('token');
+      if (!token) return navigate('/');
 
       axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-      const response = await axios.get(`http://localhost:8080/api/client/${userData.id}`);
+      const response = await axios.get('http://localhost:8080/api/client/profile');
       const client = response.data;
-      console.log("client", client);
 
-      handleSelectedClient(client); // <- make sure this is defined
+      const normalized = {
+        id: client.id_user,
+        fullName: client.full_name || '',
+        email: client.email || '',
+        phoneNumber: client.phone || '',
+        address: client.adress || '',
+        picture: '',
+      };
 
-setFullName(client.fullName);
-setEmail(client.email);
-setAge(`${client.age} years old`);
-setPhoneNumber(client.phoneNumber);
-setAddress(client.address);
-setPicture(client.picture);
+      handleSelectedClient(normalized);
 
+      setFullName(normalized.fullName);
+      setEmail(normalized.email);
+      setPhoneNumber(normalized.phoneNumber);
+      setAddress(normalized.address);
+      setPicture(normalized.picture);
     } catch (err) {
       console.error('Error fetching client data:', err);
     }
@@ -168,15 +175,6 @@ console.log("fullName",fullName)
                   </div>
                 </div>
                 
-                <div className="client-info-item">
-                  <svg className="client-info-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3a4 4 0 118 0v4m-4 8a2 2 0 100-4 2 2 0 000 4zm6-6a2 2 0 11-4 0 2 2 0 014 0z" />
-                  </svg>
-                  <div className="client-info-content">
-                    <div className="client-info-label">Age</div>
-                    <div className="client-info-value">{age}</div>
-                  </div>
-                </div>
               </div>
 
               {/* Contact Information */}
