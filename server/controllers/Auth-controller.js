@@ -8,7 +8,7 @@ const {Client,Seller} = require('../database-models');
   // Hanlde the register
     const registerUser= async (req,res)=>{
         const {email,fullName,password,role}=req.body
-        if (!email && !password && !role && !fullName) {
+        if (!email || !password || !role || !fullName) {
              return res.status(400).send('Missing required fields');
     }
         try{
@@ -58,7 +58,7 @@ const {Client,Seller} = require('../database-models');
     //handle login
     const loginUser=async (req,res)=>{
         const {email,password}=req.body
-        if(!email && !password){
+        if(!email || !password){
             return res.status(400).send('Missing required fields' );
         }
 
