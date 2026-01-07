@@ -1,14 +1,14 @@
 """
 Script pour initialiser la base de données MySQL
-Ce script exécute le fichier database.sql pour créer la base de données
+Ce script exécute le fichier E-Commerce-BD.sql pour créer la base de données
 """
 import subprocess
 import sys
 import os
 
 def init_database():
-    """Initialise la base de données MySQL en exécutant database.sql"""
-    sql_file = os.path.join(os.path.dirname(__file__), 'database.sql')
+    """Initialise la base de données MySQL en exécutant E-Commerce-BD.sql"""
+    sql_file = os.path.join(os.path.dirname(__file__), 'E-Commerce-BD.sql')
     
     if not os.path.exists(sql_file):
         print(f"Erreur: Le fichier {sql_file} n'existe pas")
@@ -19,13 +19,14 @@ def init_database():
     
     try:
         # Commande MySQL (Windows)
-        # Pour Linux/Mac, utiliser: mysql -u root -p < database.sql
-        result = subprocess.run(
-            ['mysql', '-u', 'root', '-p'],
-            stdin=open(sql_file, 'r'),
-            capture_output=True,
-            text=True
-        )
+        # Pour Linux/Mac, utiliser: mysql -u root -p < E-Commerce-BD.sql
+        with open(sql_file, 'r', encoding='utf-8') as f:
+            result = subprocess.run(
+                ['mysql', '-u', 'root', '-p'],
+                stdin=f,
+                capture_output=True,
+                text=True
+            )
         
         if result.returncode == 0:
             print("✓ Base de données initialisée avec succès!")
@@ -45,5 +46,4 @@ def init_database():
 
 if __name__ == '__main__':
     init_database()
-
 
