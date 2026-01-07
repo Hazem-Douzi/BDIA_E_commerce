@@ -6,6 +6,7 @@ import '../../App.css';
 const HomePage = ({products}) => {
   const navigate = useNavigate();
   const [cart, setCart] = useState([]);
+  const [cartTotal, setCartTotal] = useState(0);
   const [showCartDropdown, setShowCartDropdown] = useState(false);
   const [timeLeft, setTimeLeft] = useState({
     days: 2,
@@ -13,6 +14,28 @@ const HomePage = ({products}) => {
     minutes: 32,
     seconds: 45
   });
+
+  const fetchCart = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        setCart([]);
+        setCartTotal(0);
+        return;
+      }
+      const res = await axios.get("http://127.0.0.1:8080/api/cart", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      setCart(res.data.items || []);
+      setCartTotal(res.data.total || 0);
+    } catch (error) {
+      console.error("Failed to fetch cart:", error);
+      setCart([]);
+      setCartTotal(0);
+    }
+  };
 
 
   useEffect(() => {
@@ -34,6 +57,16 @@ const HomePage = ({products}) => {
     return () => clearInterval(timer);
     
   }, []);
+
+  useEffect(() => {
+    fetchCart();
+  }, []);
+
+  useEffect(() => {
+    if (showCartDropdown) {
+      fetchCart();
+    }
+  }, [showCartDropdown]);
   const featuredProducts = []
 products.map((product)=>{
   featuredProducts.push(product)
@@ -119,18 +152,30 @@ products.map((product)=>{
                         {cart.map((item, index) => (
                           <div key={index} className="cart-item flex items-center gap-3 py-2 border-b border-gray-100 last:border-b-0">
                             <img 
-                              src={item.image} 
-                              alt={item.name} 
+                              src={item.product?.images?.[0]?.imageURL} 
+                              alt={item.product?.product_name} 
                               className="cart-item-image w-12 h-12 object-cover rounded"
                             />
                             <div className="cart-item-info flex-1">
-                              <div className="cart-item-name text-sm font-medium text-gray-800">{item.name}</div>
-                              <div className="cart-item-price text-sm font-semibold text-red-600">${item.price}</div>
+                              <div className="cart-item-name text-sm font-medium text-gray-800">{item.product?.product_name}</div>
+                              <div className="cart-item-price text-sm font-semibold text-red-600">${item.product?.price}</div>
+                              <div className="text-xs text-gray-500">Qty: {item.quantity}</div>
                             </div>
                             <button 
-                              onClick={(e) => {
+                              onClick={async (e) => {
                                 e.stopPropagation();
-                                setCart(cart.filter((_, i) => i !== index));
+                                const token = localStorage.getItem("token");
+                                if (!token) return;
+                                try {
+                                  await axios.delete(`http://127.0.0.1:8080/api/cart/item/${item.id_cart_item}`, {
+                                    headers: {
+                                      Authorization: `Bearer ${token}`,
+                                    },
+                                  });
+                                  fetchCart();
+                                } catch (error) {
+                                  console.error("Failed to remove cart item:", error);
+                                }
                               }}
                               className="text-red-500 hover:text-red-700 text-sm"
                             >
@@ -141,7 +186,7 @@ products.map((product)=>{
                       </div>
                       <div className="cart-total mt-4 pt-3 border-t border-gray-200">
                         <div className="cart-total-amount text-lg font-bold text-gray-800 mb-3">
-                          Total: ${cart.reduce((sum, item) => sum + item.price, 0).toFixed(2)}
+                          Total: ${cartTotal.toFixed(2)}
                         </div>
                         <button className="checkout-btn w-full bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-4 rounded-lg transition-all duration-300 transform hover:-translate-y-0.5">
                           Proceed to Checkout
@@ -171,7 +216,13 @@ products.map((product)=>{
       <section className="hero">
         <h1>Discover Amazing Products</h1>
         <p>Shop the latest trends with unbeatable prices and fast delivery</p>
-        <button className="btn" onClick={() => navigate('/Home_client/Productlist_client')}>Shop Now</button>
+        <button
+          type="button"
+          className="btn"
+          onClick={() => navigate('/Home_client/Productlist_client')}
+        >
+          Shop Now
+        </button>
       </section>
 
       {/* Categories Section */}
@@ -180,7 +231,7 @@ products.map((product)=>{
         <div className="category-list">
           {categories.map((category, index) => (
             <div key={index} className="category-item">
-              {category}
+              <span>{category}</span>
             </div>
           ))}
         </div>
@@ -188,22 +239,22 @@ products.map((product)=>{
 
       {/* Products Section */}
       <section className="products">
-        <h2 className="section-title">Featured Products</h2>
+        <h2 className="section-title charm-title">New Arrivals</h2>
         <div className="product-grid">
           {featuredProducts.map((product) => (
-            <div key={product.id} className="product-card">
+            <div key={product.id_product} className="product-card">
               <img 
-                src={product.image} 
-                alt={product.name} 
-                onClick={() => handleViewProduct(product.id)}
+                src={product.images?.[0]?.imageURL} 
+                alt={product.product_name} 
+                onClick={() => handleViewProduct(product.id_product)}
                 style={{ cursor: 'pointer' }}
               />
-              <h3 className="product-title">{product.name}</h3>
-              <p className="product-desc">{product.description}</p>
+              <h3 className="product-title">{product.product_name}</h3>
+              <p className="product-desc">{product.product_description}</p>
               <div className="product-info">
                 <div className="product-price">${product.price}</div>
                 <div className="product-status">
-                  {product.available ? (
+                  {product.stock > 0 ? (
                     <span className="available">✓ Available</span>
                   ) : (
                     <span className="unavailable">✗ Out of Stock</span>

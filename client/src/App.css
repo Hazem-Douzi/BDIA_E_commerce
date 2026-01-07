@@ -88,13 +88,13 @@
   .hero {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     color: white;
-    padding: 80px 40px;
+    padding: 60px 40px;
     text-align: left;
     position: relative;
     overflow: hidden;
     display: flex;
     align-items: center;
-    min-height: 500px;
+    min-height: 360px;
   }
   
   .hero::before {
@@ -106,6 +106,12 @@
     height: 100%;
     background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300"><defs><style>.shopping-bags{fill:%23ffffff;opacity:0.1}</style></defs><g class="shopping-bags"><path d="M100 80h40v20h-40zM160 60h40v20h-40zM220 90h40v20h-40z"/></g></svg>') no-repeat center;
     background-size: contain;
+    pointer-events: none;
+  }
+
+  .hero > * {
+    position: relative;
+    z-index: 1;
   }
   
   .hero h1 {
@@ -138,6 +144,7 @@
   }
   
   .btn:hover {
+    color: #ffffff;
     transform: translateY(-2px);
     box-shadow: 0 6px 20px rgba(0,0,0,0.15);
   }
@@ -193,7 +200,7 @@
   
   .category-item:hover {
     transform: translateY(-5px);
-    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1), 0 0 0 2px rgba(102, 126, 234, 0.45);
     color: white;
   }
   
@@ -214,9 +221,9 @@
   
   .product-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 30px;
-    max-width: 1200px;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 20px;
+    max-width: 1100px;
     margin: 0 auto;
   }
   
@@ -227,6 +234,8 @@
     box-shadow: 0 4px 15px rgba(0,0,0,0.08);
     transition: all 0.3s ease;
     position: relative;
+    max-width: 320px;
+    margin: 0 auto;
   }
   
   .product-card:hover {
@@ -236,7 +245,7 @@
   
   .product-card img {
     width: 100%;
-    height: 200px;
+    height: 180px;
     object-fit: cover;
     transition: transform 0.3s ease;
   }
@@ -245,9 +254,9 @@
     transform: scale(1.05);
   }
   
-  .product-title {
-    font-size: 20px;
-    font-weight: 600;
+.product-title {
+  font-size: 20px;
+  font-weight: 600;
     margin: 20px 20px 10px;
     color: #2d3748;
   }
@@ -1035,6 +1044,12 @@
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
   min-height: 100vh;
   background-color: #f9fafb;
+}
+
+.charm-title {
+  font-family: "Charm", "Georgia", "Times New Roman", serif;
+  font-weight: 700;
+  letter-spacing: 0.5px;
 }
 
 /* Navigation Bar */
@@ -2084,7 +2099,7 @@ footer {
 
 .star-rating-display .star {
   color: #ffd700;
-  font-size: 1rem;
+  font-size: 1.25rem;
 }
 
 .star-rating-display .star.empty {
@@ -2250,12 +2265,13 @@ footer {
   right: 60px;
   background: rgba(255,255,255,0.9);
   border: none;
-  width: 40px;
-  height: 40px;
+  width: 44px;
+  height: 44px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
+  font-size: 1.25rem;
   cursor: pointer;
   transition: all 0.3s ease;
   backdrop-filter: blur(10px);

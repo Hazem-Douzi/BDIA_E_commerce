@@ -17,6 +17,7 @@ export default function ProductList({ handleselectedProd ,products,
 }) {
   const navigate = useNavigate();
   const [cart, setCart] = useState([]);
+  const [cartTotal, setCartTotal] = useState(0);
   const [wishlist, setWishlist] = useState([]);
   const [quantities, setQuantities] = useState({});
   const [showCartDropdown, setShowCartDropdown] = useState(false);
@@ -34,12 +35,65 @@ export default function ProductList({ handleselectedProd ,products,
     navigate("/");
   };
 
+  const fetchCart = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        setCart([]);
+        setCartTotal(0);
+        return;
+      }
+      const res = await axios.get("http://127.0.0.1:8080/api/cart", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      setCart(res.data.items || []);
+      setCartTotal(res.data.total || 0);
+    } catch (error) {
+      console.error("Failed to fetch cart:", error);
+      setCart([]);
+      setCartTotal(0);
+    }
+  };
+
+  useEffect(() => {
+    fetchCart();
+  }, []);
+
+  useEffect(() => {
+    if (showCartDropdown) {
+      fetchCart();
+    }
+  }, [showCartDropdown]);
+
   // Cart and Wishlist Functions
-  const handleAddToCart = (product) => {
-    const quantity = quantities[product.id] || 1;
-    const cartItem = { ...product, quantity };
-    setCart(prevCart => [...prevCart, cartItem]);
-    alert(`${product.name} has been added to your cart!`);
+  const handleAddToCart = async (product) => {
+    const quantity = quantities[product.id_product] || 1;
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        alert("Please login first.");
+        return;
+      }
+      await axios.post(
+        "http://127.0.0.1:8080/api/cart/add",
+        {
+          id_product: product.id_product,
+          quantity,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      await fetchCart();
+      alert(`${product.product_name} has been added to your cart!`);
+    } catch (error) {
+      console.error("Failed to add to cart:", error);
+    }
   };
 
    const handleOffer =  async () => {
@@ -60,8 +114,8 @@ export default function ProductList({ handleselectedProd ,products,
 }
 
   const handleAddToWishlist = (product) => {
-    if (wishlist.find(item => item.id === product.id)) {
-      setWishlist(wishlist.filter(item => item.id !== product.id));
+    if (wishlist.find(item => item.id_product === product.id_product)) {
+      setWishlist(wishlist.filter(item => item.id_product !== product.id_product));
     } else {
       setWishlist([...wishlist, product]);
     }
@@ -74,12 +128,17 @@ export default function ProductList({ handleselectedProd ,products,
     }));
   };
 
-  const renderStars = (rating) => {
+  const renderStarsSafe = (rating) => {
     return [...Array(5)].map((_, index) => (
       <span key={index} className={`star ${index < rating ? '' : 'empty'}`}>★</span>
     ));
   };
 
+  const renderStars = (rating) => {
+    return [...Array(5)].map((_, index) => (
+      <span key={index} className={`star ${index < rating ? '' : 'empty'}`}>★</span>
+    ));
+  };
 
 
 
@@ -143,19 +202,27 @@ export default function ProductList({ handleselectedProd ,products,
                         {cart.map((item, index) => (
                           <div key={index} className="cart-item flex items-center gap-3 py-2 border-b border-gray-100 last:border-b-0">
                             <img 
-                              src={item.image || 'https://via.placeholder.com/50x50'} 
-                              alt={item.name} 
+                              src={item.product?.images?.[0]?.imageURL || 'https://via.placeholder.com/50x50'} 
+                              alt={item.product?.product_name} 
                               className="cart-item-image w-12 h-12 object-cover rounded"
                             />
                             <div className="cart-item-info flex-1">
-                              <div className="cart-item-name text-sm font-medium text-gray-800">{item.name}</div>
-                              <div className="cart-item-price text-sm font-semibold text-red-600">{item.price} TND</div>
+                              <div className="cart-item-name text-sm font-medium text-gray-800">{item.product?.product_name}</div>
+                              <div className="cart-item-price text-sm font-semibold text-red-600">{item.product?.price} TND</div>
                               <div className="text-xs text-gray-500">Qty: {item.quantity || 1}</div>
                             </div>
                             <button 
                               onClick={(e) => {
                                 e.stopPropagation();
-                                setCart(cart.filter((_, i) => i !== index));
+                                const token = localStorage.getItem("token");
+                                if (!token) return;
+                                axios.delete(`http://127.0.0.1:8080/api/cart/item/${item.id_cart_item}`, {
+                                  headers: {
+                                    Authorization: `Bearer ${token}`,
+                                  },
+                                }).then(fetchCart).catch((error) => {
+                                  console.error("Failed to remove cart item:", error);
+                                });
                               }}
                               className="text-red-500 hover:text-red-700 text-sm"
                             >
@@ -166,7 +233,7 @@ export default function ProductList({ handleselectedProd ,products,
                       </div>
                       <div className="cart-total mt-4 pt-3 border-t border-gray-200">
                         <div className="cart-total-amount text-lg font-bold text-gray-800 mb-3">
-                          Total: {cart.reduce((sum, item) => sum + (item.price * (item.quantity || 1)), 0).toFixed(2)} TND
+                          Total: {cartTotal.toFixed(2)} TND
                         </div>
                         <button className="checkout-btn w-full bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-4 rounded-lg transition-all duration-300 transform hover:-translate-y-0.5">
                           Proceed to Checkout
@@ -212,16 +279,16 @@ export default function ProductList({ handleselectedProd ,products,
 
           <div className="products-grid-enhanced">
             {products.map((product) => (
-              <div key={product.id} className="product-card-enhanced">
+              <div key={product.id_product} className="product-card-enhanced">
                 <div className="product-image-container">
                   <img
-                    src={product.image || 'https://via.placeholder.com/300x280'}
-                    alt={product.name}
+                    src={product.images?.[0]?.imageURL || 'https://via.placeholder.com/300x280'}
+                    alt={product.product_name}
                   />
                   
                   {/* Status Badge */}
-                  <span className={`product-status-badge ${product.available ? 'available' : 'out-of-stock'}`}>
-                    {product.available ? 'Available' : 'Out of Stock'}
+                  <span className={`product-status-badge ${product.stock > 0 ? 'available' : 'out-of-stock'}`}>
+                    {product.stock > 0 ? 'Available' : 'Out of Stock'}
                   </span>
                   
                   {/* Negotiable Badge */}
@@ -231,10 +298,10 @@ export default function ProductList({ handleselectedProd ,products,
                   
                   {/* Wishlist Button */}
                   <button 
-                    className={`wishlist-btn ${wishlist.find(item => item.id === product.id) ? 'active' : ''}`}
+                    className={`wishlist-btn ${wishlist.find(item => item.id_product === product.id_product) ? 'active' : ''}`}
                     onClick={() => handleAddToWishlist(product)}
                   >
-                    ❤️
+                    {wishlist.find(item => item.id_product === product.id_product) ? "♥" : "♡"}
                   </button>
                   
                   {/* Quick Actions Overlay */}
@@ -248,14 +315,14 @@ export default function ProductList({ handleselectedProd ,products,
                     <button 
                       className="quick-action-btn"
                       onClick={() => handleAddToCart(product)}
-                      disabled={!product.available}
+                      disabled={product.stock <= 0}
                     >
                       Add to Cart
                     </button>
                   </div>
                   
                   {/* Sold Out Overlay */}
-                  {!product.available && (
+                  {product.stock <= 0 && (
                     <div className="sold-out-overlay">
                       <span className="sold-out-text">Sold Out</span>
                     </div>
@@ -263,8 +330,8 @@ export default function ProductList({ handleselectedProd ,products,
                 </div>
                 
                 <div className="product-content">
-                  <h3 className="product-title">{product.name}</h3>
-                  <p className="product-description">{product.description || 'No description available'}</p>
+                  <h3 className="product-title">{product.product_name}</h3>
+                  <p className="product-description">{product.product_description || 'No description available'}</p>
                   
                   {/* Product Info Tags */}
                   <div className="product-info-tags">
@@ -276,9 +343,9 @@ export default function ProductList({ handleselectedProd ,products,
                   {/* Rating */}
                   <div className="product-rating">
                     <div className="star-rating-display">
-                      {renderStars(product.rate || 0)}
+                      {renderStarsSafe(product.rating || 0)}
                     </div>
-                    <span className="rating-text">({product.rate || 0}/5)</span>
+                    <span className="rating-text">({product.rating || 0}/5)</span>
                   </div>
                   
                   {/* Price Section */}
@@ -296,22 +363,22 @@ export default function ProductList({ handleselectedProd ,products,
       <div className="product-offer text-sm text-green-700 mt-1"> Offer: TND {product.offer}</div>)}</div>
                   
                   {/* Quantity Selector */}
-                  {product.available && (
+                  {product.stock > 0 && (
                     <div className="quantity-selector">
                       <span className="quantity-label">Qty:</span>
                       <div className="quantity-controls">
                         <button 
                           className="quantity-btn"
-                          onClick={() => handleQuantityChange(product.id, -1)}
-                          disabled={(quantities[product.id] || 1) <= 1}
+                          onClick={() => handleQuantityChange(product.id_product, -1)}
+                          disabled={(quantities[product.id_product] || 1) <= 1}
                         >
                           -
                         </button>
-                        <span className="quantity-display">{quantities[product.id] || 1}</span>
+                        <span className="quantity-display">{quantities[product.id_product] || 1}</span>
                         <button 
                           className="quantity-btn"
-                          onClick={() => handleQuantityChange(product.id, 1)}
-                          disabled={(quantities[product.id] || 1) >= (product.quantity || 10)}
+                          onClick={() => handleQuantityChange(product.id_product, 1)}
+                          disabled={(quantities[product.id_product] || 1) >= (product.stock || 10)}
                         >
                           +
                         </button>
@@ -324,7 +391,7 @@ export default function ProductList({ handleselectedProd ,products,
                     <button 
                       className="add-to-cart-enhanced"
                       onClick={() => handleAddToCart(product)}
-                      disabled={!product.available}
+                      disabled={product.stock <= 0}
                     >
                       <svg className="cart-icon-btn" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4m0 0L7 13m0 0l-1.5 6M7 13l-1.5 6m0 0h9M17 21a2 2 0 100-4 2 2 0 000 4zM9 21a2 2 0 100-4 2 2 0 000 4z" />

@@ -320,12 +320,16 @@ export default function Add_product({fetchProducts}) {
                 <label className="block text-sm font-medium text-gray-700">
                   Quantity
                 </label>
-                <input
-                  type="number"
-                  value={quantity}
-                  onChange={(e) => setQuantity(parseInt(e.target.value))}
-                  className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
-                />
+              <input
+                type="number"
+                min="0"
+                value={quantity}
+                onChange={(e) => {
+                  const nextValue = parseInt(e.target.value, 10);
+                  setQuantity(Number.isNaN(nextValue) ? 0 : Math.max(0, nextValue));
+                }}
+                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+              />
               </div>
 
               <div>

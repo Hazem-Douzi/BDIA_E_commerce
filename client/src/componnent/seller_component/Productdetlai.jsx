@@ -1,9 +1,13 @@
-import React from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
 
 export default function ProductDetail({ selectedprod, fetchProducts }) {
   const navigate = useNavigate();
+  const { productId } = useParams();
+  const [product, setProduct] = useState(selectedprod || null);
+  const [loading, setLoading] = useState(!selectedprod);
+  const [error, setError] = useState("");
 // --Navigation
   const handleMyProducts = () => navigate("/Home_seller/my_products");
   const handleAddProduct = () => navigate("/Home_seller/add_product");
@@ -19,9 +23,35 @@ export default function ProductDetail({ selectedprod, fetchProducts }) {
     navigate("/Home_seller");
   };
 
+  useEffect(() => {
+    if (selectedprod) {
+      setProduct(selectedprod);
+      setLoading(false);
+      return;
+    }
+    if (!productId) {
+      setLoading(false);
+      setError("No product selected.");
+      return;
+    }
+    const fetchProduct = async () => {
+      try {
+        const res = await axios.get(`http://127.0.0.1:8080/api/product/${productId}`);
+        setProduct(res.data);
+      } catch (err) {
+        console.error("Failed to load product:", err);
+        setError("Failed to load product.");
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchProduct();
+  }, [selectedprod, productId]);
+
   const handleDelete = async () => {
     try {
-      await axios.delete(`http://127.0.0.1:8080/api/product/delete/${selectedprod.id}`);
+      const targetId = product?.id_product || productId;
+      await axios.delete(`http://127.0.0.1:8080/api/product/delete/${targetId}`);
       alert("Product deleted successfully");
     fetchProducts()
     navigate("/Home_seller/my_products")
@@ -35,7 +65,8 @@ export default function ProductDetail({ selectedprod, fetchProducts }) {
     navigate(`/Home_seller/Update_product`);
   };
 
-  if (!selectedprod) return <div className="text-center mt-10">No product selected.</div>;
+  if (loading) return <div className="text-center mt-10">Loading...</div>;
+  if (!product) return <div className="text-center mt-10">{error || "No product selected."}</div>;
 
   return (
     <div className="min-h-screen bg-gray-100">
@@ -80,29 +111,25 @@ export default function ProductDetail({ selectedprod, fetchProducts }) {
       <div className="max-w-6xl mx-auto my-12 p-8 bg-white shadow-2xl rounded-2xl">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
           <img
-            src={selectedprod.image || "/placeholder.jpg"}
-            alt={selectedprod.name}
+            src={product.images?.[0]?.imageURL || "/placeholder.jpg"}
+            alt={product.product_name}
             className="w-full h-[500px] object-cover rounded-xl border"
           />
 
           <div className="flex flex-col space-y-6">
             <div>
-              <h2 className="text-4xl font-bold text-gray-800">{selectedprod.name}</h2>
-              <p className="text-lg text-gray-500 mt-1">{selectedprod.category}</p>
-              <p className="text-md text-gray-600 mt-4">{selectedprod.description}</p>
+              <h2 className="text-4xl font-bold text-gray-800">{product.product_name}</h2>
+              <p className="text-lg text-gray-500 mt-1">{product.category?.category_name || "Uncategorized"}</p>
+              <p className="text-md text-gray-600 mt-4">{product.product_description}</p>
             </div>
 
             <div className="grid grid-cols-2 gap-4 text-md">
-              <p><strong>Brand:</strong> {selectedprod.brand || "N/A"}</p>
-              <p><strong>State:</strong> {selectedprod.state}</p>
-              <p><strong>Price:</strong> ${selectedprod.price}</p>
-              <p><strong>Quantity:</strong> {selectedprod.quantity}</p>
-              <p><strong>Promo:</strong> {selectedprod.promo}%</p>
-              <p><strong>Available:</strong> {selectedprod.available ? "Yes" : "No"}</p>
-              <p><strong>Negotiable:</strong> {selectedprod.negociable ? "Yes" : "No"}</p>
-              <p><strong>Delivered:</strong> {selectedprod.delivered ? "Yes" : "No"}</p>
-              <p><strong>Rate:</strong> {selectedprod.rate}/5</p>
-              <p><strong>Date Added:</strong> {new Date(selectedprod.date).toLocaleDateString()}</p>
+              <p><strong>Brand:</strong> {product.brand || "N/A"}</p>
+              <p><strong>Price:</strong> ${product.price}</p>
+              <p><strong>Stock:</strong> {product.stock}</p>
+              <p><strong>Available:</strong> {product.stock > 0 ? "Yes" : "No"}</p>
+              <p><strong>Rating:</strong> {product.rating || 0}/5</p>
+              <p><strong>Date Added:</strong> {product.createdAtt ? new Date(product.createdAtt).toLocaleDateString() : "N/A"}</p>
             </div>
 
             <div className="flex gap-4 mt-4">

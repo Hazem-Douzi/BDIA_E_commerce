@@ -8,10 +8,10 @@ const SellerHome = ({handleSelectedSeller}) => {
   const [user, setUser] = useState({
     fullName: '',
     email: '',
-    age: '',
     phoneNumber: '',
     address: '',
-    picture: '',
+    shopName: '',
+    shopDescription: '',
   });
 
   useEffect(() => {
@@ -35,10 +35,10 @@ const SellerHome = ({handleSelectedSeller}) => {
         setUser({
           fullName: seller.full_name || '' ,
           email: seller.email || '' ,
-          age: '' ,
           phoneNumber: seller.phone || '' ,
           address: seller.adress || '' ,
-          picture: seller.seller_profile?.shop_image || '' ,
+          shopName: seller.seller_profile?.shop_name || '' ,
+          shopDescription: seller.seller_profile?.shop_description || '' ,
         });
       } catch (err) {
         console.error('Error fetching seller data:', err);
@@ -74,16 +74,6 @@ const SellerHome = ({handleSelectedSeller}) => {
           Welcome back, {user.fullName.split(' ')[0] || 'Seller'}!
         </h2>
 
-        {user.picture && (
-          <div className="mb-6 text-center">
-            <img
-              src={user.picture}
-              alt="Profile"
-              className="w-32 h-32 rounded-full mx-auto object-cover shadow"
-            />
-          </div>
-        )}
-
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-gray-700">
           <div className="space-y-3">
             <p><span className="font-semibold">Full Name:</span> {user.fullName}</p>
@@ -91,8 +81,9 @@ const SellerHome = ({handleSelectedSeller}) => {
             <p><span className="font-semibold">Phone:</span> {user.phoneNumber}</p>
           </div>
           <div className="space-y-3">
-            <p><span className="font-semibold">Age:</span> {user.age}</p>
             <p><span className="font-semibold">Address:</span> {user.address}</p>
+            <p><span className="font-semibold">Shop Name:</span> {user.shopName}</p>
+            <p><span className="font-semibold">Shop Description:</span> {user.shopDescription}</p>
           </div>
         </div>
 

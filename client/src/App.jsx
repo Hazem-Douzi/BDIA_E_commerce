@@ -103,7 +103,7 @@ function App() {
           <Route path="/Home_seller/profile" element={<Profile_seller  handleSelectedSeller={handleSelectedSeller}/>} />
           <Route path="/Home_seller/add_product" element={<Add_product fetchProducts={fetchProducts} selectedSeller={selectedSeller}/>} />
           <Route path="/Home_seller/my_products" element={<Productlist  handleselectedProd={handleselectedProd}/>}/>
-          <Route path="/Home_seller/Productdetlai" element={<Productdetlai selectedprod={selectedprod} fetchProducts={fetchProducts}/>}/>
+          <Route path="/Home_seller/Productdetlai/:productId" element={<Productdetlai selectedprod={selectedprod} fetchProducts={fetchProducts}/>}/>
           <Route path="/Home_seller/Update_product" element={<Update_product selectedprod={selectedprod} fetchProducts={fetchProducts}/>}/>
           <Route path="/Home_seller/profile/UpdateSeller" element={<UpdateSeller selectedSeller={selectedSeller} />}/>          
           {/* Admin Routes */}

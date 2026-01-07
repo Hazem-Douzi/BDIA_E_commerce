@@ -58,7 +58,7 @@ export default function Home_seller() {
       {/* Main Content */}
       <main className="p-8">
         <h2 className="text-3xl font-bold text-gray-800 mb-2">
-          Welcome Seller!
+          👋 Welcome {JSON.parse(localStorage.getItem("user") || "{}").username || "Seller"}
         </h2>
         <p className="text-gray-600 text-lg">
           Manage your products, update your profile, and track your sales right

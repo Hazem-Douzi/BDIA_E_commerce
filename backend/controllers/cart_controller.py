@@ -45,12 +45,23 @@ def add_to_cart(client_id, data):
 
         if not product_id:
             return jsonify({"message": "Product ID is required"}), 400
+        try:
+            product_id = int(product_id)
+            quantity = int(quantity)
+        except (TypeError, ValueError):
+            return jsonify({"message": "Invalid product or quantity"}), 400
+        if quantity <= 0:
+            return jsonify({"message": "Quantity must be positive"}), 400
 
         product = products_dao.get_product(product_id)
         if not product:
             return jsonify({"message": "Product not found"}), 404
-
-        if product["stock"] < quantity:
+        stock = product.get("stock") or 0
+        try:
+            stock = int(stock)
+        except (TypeError, ValueError):
+            stock = 0
+        if stock < quantity:
             return jsonify({"message": "Insufficient stock"}), 400
 
         cart = cart_dao.get_cart_by_client(client_id)
