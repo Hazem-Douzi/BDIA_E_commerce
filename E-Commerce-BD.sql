@@ -1,4 +1,4 @@
-create database ECommerce;
+create database if not exists ECommerce;
 use ECommerce;
 
 create table users(
