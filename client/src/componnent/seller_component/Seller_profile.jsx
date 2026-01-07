@@ -27,18 +27,18 @@ const SellerHome = ({handleSelectedSeller}) => {
 
         axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
 
-        const response = await axios.get(`http://localhost:8080/api/seller/${userData.id}`);
+        const response = await axios.get(`http://localhost:8080/api/seller/profile`);
         const seller = response.data;
 
         handleSelectedSeller(seller)
 
         setUser({
-          fullName: seller.fullName ,
-          email: seller.email ,
-          age:  `${seller.age} years old` ,
-          phoneNumber: seller.phoneNumber ,
-          address: seller.address ,
-          picture: seller.picture ,
+          fullName: seller.full_name || '' ,
+          email: seller.email || '' ,
+          age: '' ,
+          phoneNumber: seller.phone || '' ,
+          address: seller.adress || '' ,
+          picture: seller.seller_profile?.shop_image || '' ,
         });
       } catch (err) {
         console.error('Error fetching seller data:', err);

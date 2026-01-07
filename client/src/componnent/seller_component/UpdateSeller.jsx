@@ -11,32 +11,38 @@ import axios from "axios";
 
 export default function UpdateSeller({selectedSeller}) {
   const navigate = useNavigate();
-const [fullName, setFullName] = useState(selectedSeller.fullName );
-const [email, setEmail] = useState(selectedSeller.email);
-const [age, setAge] = useState(selectedSeller.age );
-const [phoneNumber, setPhoneNumber] = useState(selectedSeller.phoneNumber);
-const [address, setAddress] = useState(selectedSeller.address );
-const [picture, setPicture] = useState(selectedSeller.picture );
-const [password, setPassword] = useState("")
+  const [fullName, setFullName] = useState(selectedSeller?.full_name || "");
+  const [email, setEmail] = useState(selectedSeller?.email || "");
+  const [phoneNumber, setPhoneNumber] = useState(selectedSeller?.phone || "");
+  const [address, setAddress] = useState(selectedSeller?.adress || "");
+  const [shopName, setShopName] = useState(selectedSeller?.seller_profile?.shop_name || "");
+  const [shopDescription, setShopDescription] = useState(selectedSeller?.seller_profile?.shop_description || "");
+  const [password, setPassword] = useState("");
 
 
 
   const saveclient = async () => {
     try {
       const data = {
-  fullName,
-  email,
-  age,
-  phoneNumber,
-  address,
-  picture,
-};
+        full_name: fullName,
+        email,
+        phone: phoneNumber,
+        adress: address,
+        shop_name: shopName,
+        shop_description: shopDescription,
+      };
 
 if (password) data.password = password;
 
-await axios.patch(
-  `http://127.0.0.1:8080/api/seller/update/${selectedSeller.id}`,
-  data
+await axios.put(
+  `http://127.0.0.1:8080/api/seller/profile`,
+  data,
+  {
+    headers: {
+      Authorization: `Bearer ${localStorage.getItem("token")}`,
+      "Content-Type": "application/json",
+    },
+  }
 );
     } catch (error) {
       console.error("Error:", error.message);
@@ -138,23 +144,23 @@ await axios.patch(
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700">
-                picture
+                Shop name
               </label>
               <input
                 type="text"
-                value={picture}
-                onChange={(e) => setPicture(e.target.value)}
+                value={shopName}
+                onChange={(e) => setShopName(e.target.value)}
                 className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
 
               />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700">
-                age
+                Shop description
               </label>
               <input
-                value={age}
-                onChange={(e) => setAge(e.target.value)}
+                value={shopDescription}
+                onChange={(e) => setShopDescription(e.target.value)}
                 className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
 
               />
