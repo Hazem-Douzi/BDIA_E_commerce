@@ -111,7 +111,10 @@ useEffect(() => {
                 {/* Details Link */}
                 <button
                   className="mt-4 text-blue-500 hover:underline"
-                  onClick={() => {navigate(`/Home_seller/Productdetlai`);handleselectedProd(product)}}
+                  onClick={() => {
+                    navigate(`/Home_seller/Productdetlai/${product.id_product}`);
+                    handleselectedProd(product);
+                  }}
                 >
                   View Details
                 </button>

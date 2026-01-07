@@ -241,7 +241,11 @@ export default function ProductList({ handleselectedProd ,products,
                   <div className="quick-actions-overlay">
                     <button 
                       className="quick-action-btn"
-                      onClick={() => {navigate("/Productlist/ProductDetlail");handleselectedProd(product)}}
+                      onClick={() => {
+                        const productId = product.id_product || product.id;
+                        navigate(`/Productlist/ProductDetlail/${productId}`);
+                        handleselectedProd(product);
+                      }}
                     >
                       Quick View
                     </button>
@@ -347,7 +351,11 @@ export default function ProductList({ handleselectedProd ,products,
                     
                     <button 
                       className="secondary-action-btn"
-                      onClick={() => {navigate("/Productlist/ProductDetlail");handleselectedProd(product)}}
+                      onClick={() => {
+                        const productId = product.id_product || product.id;
+                        navigate(`/Productlist/ProductDetlail/${productId}`);
+                        handleselectedProd(product);
+                      }}
                     >
                       View Details
                     </button>
