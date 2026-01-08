@@ -1,25 +1,48 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
 
 export default function update_product({selectedprod,fetchProducts}) {
   const navigate = useNavigate();
-  const [name, setName] = useState(selectedprod.name);
-  const [description, setDescription] = useState(selectedprod.description);
-  const [state, setState] = useState(selectedprod.state);
+  const { id } = useParams();
+  const [product, setProduct] = useState(selectedprod || null);
+  const [name, setName] = useState(selectedprod?.name || "");
+  const [description, setDescription] = useState(selectedprod?.description || "");
+  const [state, setState] = useState(selectedprod?.state || "");
   const [date, setDate] = useState(new Date());
-  const [price, setPrice] = useState(selectedprod.price);
-  const [available, setAvailable] = useState(selectedprod.available);
-  const [brand, setBrand] = useState(selectedprod.brand);
-  const [rate, setRate] = useState(selectedprod.rate);
-  const [quantity, setQuantity] = useState(selectedprod.quantity);
-  const [negociable, setNegociable] = useState(selectedprod.negociable);
-  const [promo, setPromo] = useState(selectedprod.promo);
-  const [delivered, setDelivered] = useState(selectedprod.delivered);
-  const [addToWishlist, setAddToWishlist] = useState(selectedprod.addToWishlist);
+  const [price, setPrice] = useState(selectedprod?.price || 0);
+  const [available, setAvailable] = useState(selectedprod?.available || false);
+  const [brand, setBrand] = useState(selectedprod?.brand || "");
+  const [rate, setRate] = useState(selectedprod?.rate || 0);
+  const [quantity, setQuantity] = useState(selectedprod?.quantity || 0);
+  const [negociable, setNegociable] = useState(selectedprod?.negociable || false);
+  const [promo, setPromo] = useState(selectedprod?.promo || 0);
+  const [delivered, setDelivered] = useState(selectedprod?.delivered || false);
+  const [addToWishlist, setAddToWishlist] = useState(selectedprod?.addToWishlist || false);
 //   const [makeOffer, setMakeOffer] = useState(false);
- const [image, setimage] = useState(selectedprod.image);
- const [category,setCategorie]=useState(selectedprod.category)
+ const [image, setimage] = useState(selectedprod?.image || "");
+ const [category,setCategorie]=useState(selectedprod?.category || "");
+
+ useEffect(() => {
+   if (!id || (product && product.id_product)) return;
+   const fetchProduct = async () => {
+     try {
+       const res = await axios.get(`http://127.0.0.1:8080/api/product/${id}`);
+       const fetched = res.data;
+       setProduct(fetched);
+       setName(fetched.product_name || "");
+       setDescription(fetched.product_description || "");
+       setPrice(fetched.price || 0);
+       setBrand(fetched.brand || "");
+       setRate(fetched.rating || 0);
+       setQuantity(fetched.stock || 0);
+       setimage(fetched.images?.[0]?.imageURL || "");
+     } catch (error) {
+       console.error("Failed to load product:", error);
+     }
+   };
+   fetchProduct();
+ }, [id, product]);
 
 
 
@@ -30,7 +53,8 @@ export default function update_product({selectedprod,fetchProducts}) {
  const saveProduct = async () => {
   try {
     // Step 1: Create product
-    const productRes = await axios.put(`http://127.0.0.1:8080/api/product/update/${selectedprod.id}`, {
+    const productId = product?.id_product || selectedprod?.id || id;
+    await axios.put(`http://127.0.0.1:8080/api/product/update/${productId}`, {
       name,
       description,
       state,
@@ -319,6 +343,7 @@ export default function update_product({selectedprod,fetchProducts}) {
                 </label>
                 <input
                   type="number"
+                  min="1"
                   value={quantity}
                   onChange={(e) => setQuantity(parseInt(e.target.value))}
                   className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"

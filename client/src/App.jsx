@@ -29,9 +29,9 @@ import Home_admin from "./componnent/admin_component/Home_admin.jsx";
 
 function App() {
   const [products, setProducts] = useState([]);
-  const [selectedprod, setSelectprod] = useState([]);
-  const [selectedSeller,setSelectedSeller]= useState([]);
-  const [selectedClient,setSelectedClient]= useState([]);
+  const [selectedprod, setSelectprod] = useState(null);
+  const [selectedSeller,setSelectedSeller]= useState(null);
+  const [selectedClient,setSelectedClient]= useState(null);
 
 
 
@@ -78,7 +78,6 @@ function App() {
         <Routes>
 
           {/* Client Routes */}
-          <Route path="/" element={<Home_client products={products}/>} />
           <Route path="/Home_client" element={<Home_client products={products}/>} />
           <Route path="/Profile_client" element={<Profile_client handleSelectedClient={handleSelectedClient}/>} />
           <Route path="/Profile_client/UpdateClient" element={<UpdateClient selectedClient={selectedClient} />}/>      
@@ -95,15 +94,15 @@ function App() {
       filterByDate={filterByDate}
       fetchProducts={fetchProducts}
       />}/>
-          <Route path="/Productlist/ProductDetlail" element={<ProductDetlail selectedprod={selectedprod}/>} />
+          <Route path="/Productlist/ProductDetlail/:id" element={<ProductDetlail selectedprod={selectedprod}/>} />
           
           {/* Seller Routes */}
           <Route path="/Home_seller" element={<Home_seller />} />
           <Route path="/Home_seller/profile" element={<Profile_seller  handleSelectedSeller={handleSelectedSeller}/>} />
           <Route path="/Home_seller/add_product" element={<Add_product fetchProducts={fetchProducts} selectedSeller={selectedSeller}/>} />
           <Route path="/Home_seller/my_products" element={<Productlist  handleselectedProd={handleselectedProd}/>}/>
-          <Route path="/Home_seller/Productdetlai" element={<Productdetlai selectedprod={selectedprod} fetchProducts={fetchProducts}/>}/>
-          <Route path="/Home_seller/Update_product" element={<Update_product selectedprod={selectedprod} fetchProducts={fetchProducts}/>}/>
+          <Route path="/Home_seller/Productdetlai/:id" element={<Productdetlai selectedprod={selectedprod} fetchProducts={fetchProducts}/>}/>
+          <Route path="/Home_seller/Update_product/:id" element={<Update_product selectedprod={selectedprod} fetchProducts={fetchProducts}/>}/>
           <Route path="/Home_seller/profile/UpdateSeller" element={<UpdateSeller selectedSeller={selectedSeller} />}/>          
           {/* Admin Routes */}
           <Route path="/Home_admin" element={<Home_admin />} />
