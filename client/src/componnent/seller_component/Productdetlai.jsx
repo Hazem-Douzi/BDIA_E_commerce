@@ -1,9 +1,12 @@
-import React from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
 
 export default function ProductDetail({ selectedprod, fetchProducts }) {
   const navigate = useNavigate();
+  const { id } = useParams();
+  const [product, setProduct] = useState(selectedprod || null);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 // --Navigation
   const handleMyProducts = () => navigate("/Home_seller/my_products");
   const handleAddProduct = () => navigate("/Home_seller/add_product");
@@ -21,21 +24,42 @@ export default function ProductDetail({ selectedprod, fetchProducts }) {
 
   const handleDelete = async () => {
     try {
-      await axios.delete(`http://127.0.0.1:8080/api/product/delete/${selectedprod.id}`);
+      const productId = product?.id_product || id;
+      const token = localStorage.getItem("token");
+      await axios.delete(`http://127.0.0.1:8080/api/product/delete/${productId}`, {
+        headers: {
+          Authorization: token ? `Bearer ${token}` : undefined,
+        },
+      });
       alert("Product deleted successfully");
     fetchProducts()
     navigate("/Home_seller/my_products")
     } catch (error) {
       console.error("Delete error:", error);
-      alert("Error deleting product");
+      const message = error?.response?.data?.message || "Error deleting product";
+      alert(message);
     }
   };
 
   const handleUpdate = () => {
-    navigate(`/Home_seller/Update_product`);
+    const productId = product?.id_product || id;
+    navigate(`/Home_seller/Update_product/${productId}`);
   };
 
-  if (!selectedprod) return <div className="text-center mt-10">No product selected.</div>;
+  useEffect(() => {
+    if (!id || (product && product.id_product)) return;
+    const fetchProduct = async () => {
+      try {
+        const res = await axios.get(`http://127.0.0.1:8080/api/product/${id}`);
+        setProduct(res.data);
+      } catch (error) {
+        console.error("Failed to load product:", error);
+      }
+    };
+    fetchProduct();
+  }, [id, product]);
+
+  if (!product) return <div className="text-center mt-10">No product selected.</div>;
 
   return (
     <div className="min-h-screen bg-gray-100">
@@ -80,29 +104,26 @@ export default function ProductDetail({ selectedprod, fetchProducts }) {
       <div className="max-w-6xl mx-auto my-12 p-8 bg-white shadow-2xl rounded-2xl">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
           <img
-            src={selectedprod.image || "/placeholder.jpg"}
-            alt={selectedprod.name}
+            src={product.images?.[0]?.imageURL || "/placeholder.jpg"}
+            alt={product.product_name || "Product image"}
             className="w-full h-[500px] object-cover rounded-xl border"
           />
 
           <div className="flex flex-col space-y-6">
             <div>
-              <h2 className="text-4xl font-bold text-gray-800">{selectedprod.name}</h2>
-              <p className="text-lg text-gray-500 mt-1">{selectedprod.category}</p>
-              <p className="text-md text-gray-600 mt-4">{selectedprod.description}</p>
+              <h2 className="text-4xl font-bold text-gray-800">{product.product_name}</h2>
+              <p className="text-lg text-gray-500 mt-1">
+                {product.category?.category_name || "Category: N/A"}
+              </p>
+              <p className="text-md text-gray-600 mt-4">{product.product_description}</p>
             </div>
 
             <div className="grid grid-cols-2 gap-4 text-md">
-              <p><strong>Brand:</strong> {selectedprod.brand || "N/A"}</p>
-              <p><strong>State:</strong> {selectedprod.state}</p>
-              <p><strong>Price:</strong> ${selectedprod.price}</p>
-              <p><strong>Quantity:</strong> {selectedprod.quantity}</p>
-              <p><strong>Promo:</strong> {selectedprod.promo}%</p>
-              <p><strong>Available:</strong> {selectedprod.available ? "Yes" : "No"}</p>
-              <p><strong>Negotiable:</strong> {selectedprod.negociable ? "Yes" : "No"}</p>
-              <p><strong>Delivered:</strong> {selectedprod.delivered ? "Yes" : "No"}</p>
-              <p><strong>Rate:</strong> {selectedprod.rate}/5</p>
-              <p><strong>Date Added:</strong> {new Date(selectedprod.date).toLocaleDateString()}</p>
+              <p><strong>Brand:</strong> {product.brand || "N/A"}</p>
+              <p><strong>Price:</strong> ${product.price ?? "0.00"}</p>
+              <p><strong>Quantity:</strong> {product.stock ?? 0}</p>
+              <p><strong>Rate:</strong> {product.rating ?? 0}/5</p>
+              <p><strong>Date Added:</strong> {product.createdAtt ? new Date(product.createdAtt).toLocaleDateString() : "N/A"}</p>
             </div>
 
             <div className="flex gap-4 mt-4">
@@ -114,7 +135,7 @@ export default function ProductDetail({ selectedprod, fetchProducts }) {
               </button>
               <button
                 className="px-5 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition"
-                onClick={handleDelete}
+                onClick={() => setShowDeleteConfirm(true)}
               >
                 Delete
               </button>
@@ -122,6 +143,33 @@ export default function ProductDetail({ selectedprod, fetchProducts }) {
           </div>
         </div>
       </div>
+      {showDeleteConfirm && (
+        <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl shadow-lg p-6 w-full max-w-md">
+            <h3 className="text-xl font-semibold text-gray-800 mb-2">Delete product?</h3>
+            <p className="text-gray-600 mb-6">
+              This action cannot be undone. Do you want to delete this product?
+            </p>
+            <div className="flex justify-end gap-3">
+              <button
+                className="px-4 py-2 rounded-md bg-gray-200 text-gray-800 hover:bg-gray-300"
+                onClick={() => setShowDeleteConfirm(false)}
+              >
+                Cancel
+              </button>
+              <button
+                className="px-4 py-2 rounded-md bg-red-600 text-white hover:bg-red-700"
+                onClick={() => {
+                  setShowDeleteConfirm(false);
+                  handleDelete();
+                }}
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
