@@ -54,23 +54,15 @@ const Register = () => {
       const response = await axios.post('http://127.0.0.1:8080/api/auth/register', {
         full_name: fullName,
         email,
-        pass_word: password,
-        rolee: role
+        password: password,  // Changed from pass_word to password
+        role: role || 'client'  // Changed from rolee to role, default to 'client'
       });
 
-      if (response.data.token) {
-        localStorage.setItem('token', response.data.token);
-        localStorage.setItem('user', JSON.stringify(response.data.user));
-        axios.defaults.headers.common['Authorization'] = `Bearer ${response.data.token}`;
-        
-        // Redirect based on role
-        if (role === 'admin') {
-          navigate('/Home_admin');
-        } else if (role === 'seller') {
-          navigate('/Home_seller');
-        } else {
-          navigate('/');
-        }
+      // Registration successful, redirect to login
+      if (response.data && response.data.message) {
+        // Show success message and redirect to login
+        alert('Inscription réussie ! Veuillez vous connecter.');
+        navigate('/login');
       }
     } catch (error) {
       console.error('Register error:', error);

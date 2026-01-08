@@ -46,26 +46,34 @@ const Login = () => {
         password: password
       });
 
-      if (response.data.token) {
+      if (response.data && response.data.token) {
         const { token, userId, username, email, role } = response.data;
+        
+        if (!token) {
+          setErrors({ submit: 'Erreur: Token manquant dans la réponse' });
+          return;
+        }
         
         localStorage.setItem('token', token);
         localStorage.setItem('user', JSON.stringify({
           id: userId,
           username,
           email,
-          role: role
+          role: role || 'client'
         }));
         axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
         
         // Redirect based on role
-        if (role === 'admin') {
+        const userRole = role || 'client';
+        if (userRole === 'admin') {
           navigate('/Home_admin');
-        } else if (role === 'seller') {
+        } else if (userRole === 'seller') {
           navigate('/Home_seller');
         } else {
           navigate('/');
         }
+      } else {
+        setErrors({ submit: 'Erreur: Réponse invalide du serveur' });
       }
     } catch (error) {
       console.error('Login error:', error);

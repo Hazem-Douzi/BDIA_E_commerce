@@ -10,7 +10,7 @@ def register_user(data):
     """Handle user registration."""
     email = data.get("email")
     full_name = data.get("fullName") or data.get("full_name")
-    password = data.get("password")
+    password = data.get("password") or data.get("pass_word")  # Support both formats
     role = data.get("role") or data.get("rolee", "client")
     phone = data.get("phone", "")
     address = data.get("address") or data.get("adress", "")
