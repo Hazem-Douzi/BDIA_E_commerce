@@ -1,4 +1,4 @@
-create database ECommerce;
+create database if not exists ECommerce;
 use ECommerce;
 
 create table users(
@@ -105,9 +105,9 @@ create table payment(
 id_payment int primary key auto_increment,
 id_order int,
 payment_amount decimal(10,4),
-method enum("card","cash_on_delivery","flouci"),
+method enum("card","cash_on_delivery","stripe"),
 payment_status enum("succes","failed","pending"),
-id_transaction int,
+id_transaction varchar(255) COMMENT 'Stripe session ID or transaction ID (string format)',
 foreign key(id_order) references orders(id_order)
 );
 
@@ -119,3 +119,33 @@ shop_description text,
 verification_status enum("pending","verified","rejected"),
 foreign key(id_user) references users(id_user)
 );
+
+-- Wishlist table
+create table wishlist(
+id_wishlist int primary key auto_increment,
+id_client int not null,
+id_product int not null,
+wishlist_createdAt datetime default current_timestamp,
+foreign key(id_client) references users(id_user) on delete cascade,
+foreign key(id_product) references product(id_product) on delete cascade,
+unique key unique_client_product (id_client, id_product),
+index idx_client (id_client),
+index idx_product (id_product)
+);
+
+-- Payment card table
+create table payment_card(
+id_payment_card int primary key auto_increment,
+id_client int not null,
+card_number varchar(19) not null,
+card_holder_name varchar(100) not null,
+expiry_date varchar(5) not null COMMENT 'Format: MM/YY',
+cvv varchar(4) not null,
+is_default boolean default false,
+created_at datetime default current_timestamp,
+foreign key(id_client) references users(id_user) on delete cascade,
+index idx_client (id_client)
+);
+
+-- Add unique constraint to review table (one review per client per product)
+alter table review add unique key unique_client_product_review (id_client, id_product);

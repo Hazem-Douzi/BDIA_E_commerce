@@ -8,12 +8,21 @@ from backend.controllers.serializers import cart_to_dict, cart_item_to_dict, pro
 def get_cart(client_id):
     """Get a client's cart."""
     try:
+        if not client_id:
+            return jsonify({"message": "Client ID is required"}), 400
+        
         cart = cart_dao.get_cart_by_client(client_id)
         if not cart:
             cart_id = cart_dao.create_cart(client_id)
+            if not cart_id:
+                return jsonify({"message": "Failed to create cart"}), 500
             cart = cart_dao.get_cart(cart_id)
+            if not cart:
+                return jsonify({"message": "Failed to retrieve created cart"}), 500
 
         result = cart_to_dict(cart)
+        if not result:
+            return jsonify({"message": "Failed to serialize cart"}), 500
         result["items"] = []
         total = 0
 
@@ -34,7 +43,8 @@ def get_cart(client_id):
         result["total"] = total
         return jsonify(result), 200
     except Exception as error:
-        return jsonify({"message": str(error)}), 500
+        import traceback
+        return jsonify({"message": str(error), "traceback": traceback.format_exc()}), 500
 
 
 def add_to_cart(client_id, data):

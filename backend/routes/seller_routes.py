@@ -12,7 +12,7 @@ def get_seller_profile():
     if user.get('role') != 'seller':
         from flask import jsonify
         return jsonify({'message': 'Unauthorized: Only sellers can access this'}), 403
-    seller_id = user.get('id')
+    seller_id = user.get('id') or user.get('id_user')
     return seller_controller.get_seller_profile(seller_id)
 
 @bp.route('/profile', methods=['PUT'])
@@ -24,7 +24,7 @@ def update_seller_profile():
         from flask import jsonify
         return jsonify({'message': 'Unauthorized: Only sellers can update their profile'}), 403
     data = request.get_json()
-    seller_id = user.get('id')
+    seller_id = user.get('id') or user.get('id_user')
     return seller_controller.update_seller_profile(seller_id, data)
 
 @bp.route('/orders', methods=['GET'])
@@ -35,7 +35,7 @@ def get_seller_orders():
     if user.get('role') != 'seller':
         from flask import jsonify
         return jsonify({'message': 'Unauthorized: Only sellers can view orders'}), 403
-    seller_id = user.get('id')
+    seller_id = user.get('id') or user.get('id_user')
     return seller_controller.get_seller_orders(seller_id)
 
 @bp.route('/stats', methods=['GET'])
@@ -46,5 +46,5 @@ def get_seller_stats():
     if user.get('role') != 'seller':
         from flask import jsonify
         return jsonify({'message': 'Unauthorized: Only sellers can view stats'}), 403
-    seller_id = user.get('id')
+    seller_id = user.get('id') or user.get('id_user')
     return seller_controller.get_seller_stats(seller_id)
