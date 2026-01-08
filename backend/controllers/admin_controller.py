@@ -110,15 +110,23 @@ def create_category():
 def get_all_categories():
     try:
         categories = categories_dao.list_categories()
+        if not categories:
+            return jsonify([]), 200
+        
         result = []
         for category in categories:
-            cat_dict = category_to_dict(category)
-            subcategories = subcategories_dao.list_subcategories_by_category(category["id_category"])
-            cat_dict["subcategories"] = [subcategory_to_dict(sub) for sub in subcategories]
-            result.append(cat_dict)
+            try:
+                cat_dict = category_to_dict(category)
+                subcategories = subcategories_dao.list_subcategories_by_category(category["id_category"])
+                cat_dict["subcategories"] = [subcategory_to_dict(sub) for sub in subcategories] if subcategories else []
+                result.append(cat_dict)
+            except Exception as e:
+                # Log error but continue processing other categories
+                continue
         return jsonify(result), 200
     except Exception as error:
-        return jsonify({"message": str(error)}), 500
+        import traceback
+        return jsonify({"message": str(error), "traceback": traceback.format_exc()}), 500
 
 
 def update_category(category_id):

@@ -48,11 +48,14 @@ def register_user(data):
 
 def login_user(data):
     """Handle user login."""
-    email = data.get("email")
-    password = data.get("password")
+    if not data:
+        return jsonify({"message": "Request body is required"}), 400
+    
+    email = data.get("email") or data.get("Email")
+    password = data.get("password") or data.get("Password")
 
     if not email or not password:
-        return jsonify({"message": "Missing required fields"}), 400
+        return jsonify({"message": "Missing required fields: email and password are required"}), 400
 
     try:
         user = users_dao.get_user_by_email(email)

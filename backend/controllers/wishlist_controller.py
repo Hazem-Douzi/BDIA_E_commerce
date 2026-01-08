@@ -13,9 +13,14 @@ from backend.database.dao import categories as categories_dao
 def get_client_wishlist(client_id):
     """Get all products in client's wishlist with full product details."""
     try:
-        wishlist_items = wishlist_dao.get_wishlist_by_client(client_id)
-        result = []
+        if not client_id:
+            return jsonify({"message": "Client ID is required"}), 400
         
+        wishlist_items = wishlist_dao.get_wishlist_by_client(client_id)
+        if not wishlist_items:
+            return jsonify([]), 200
+        
+        result = []
         for item in wishlist_items:
             product = products_dao.get_product(item['id_product'])
             if not product:
@@ -25,7 +30,7 @@ def get_client_wishlist(client_id):
             
             # Get product images
             product_images = images_dao.list_images_by_product(item['id_product'])
-            product_dict['images'] = [product_image_to_dict(img) for img in product_images]
+            product_dict['images'] = [product_image_to_dict(img) for img in product_images] if product_images else []
             
             # Get category if available
             if product.get('id_category'):
@@ -33,13 +38,14 @@ def get_client_wishlist(client_id):
                 if category:
                     product_dict['category'] = category_to_dict(category)
             
-            product_dict['wishlist_createdAt'] = item['wishlist_createdAt']
-            product_dict['id_wishlist'] = item['id_wishlist']
+            product_dict['wishlist_createdAt'] = item.get('wishlist_createdAt')
+            product_dict['id_wishlist'] = item.get('id_wishlist')
             result.append(product_dict)
         
         return jsonify(result), 200
     except Exception as error:
-        return jsonify({"message": str(error)}), 500
+        import traceback
+        return jsonify({"message": str(error), "traceback": traceback.format_exc()}), 500
 
 
 def add_to_wishlist(client_id, product_id):
@@ -84,8 +90,12 @@ def check_product_in_wishlist(client_id, product_id):
 def get_wishlist_count(client_id):
     """Get the count of products in client's wishlist."""
     try:
+        if not client_id:
+            return jsonify({"message": "Client ID is required", "count": 0}), 400
+        
         wishlist_items = wishlist_dao.get_wishlist_by_client(client_id)
         count = len(wishlist_items) if wishlist_items else 0
         return jsonify({"count": count}), 200
     except Exception as error:
-        return jsonify({"message": str(error)}), 500
+        import traceback
+        return jsonify({"message": str(error), "count": 0, "traceback": traceback.format_exc()}), 500
