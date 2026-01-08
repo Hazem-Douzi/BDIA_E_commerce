@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import Login from "./login.jsx";
@@ -78,8 +78,7 @@ function App() {
         <Routes>
 
           {/* Client Routes */}
-  const [products, setProducts] = useState([]);
-  const [products, setProducts] = useState([]);
+          <Route path="/" element={<Home_client products={products}/>} />
           <Route path="/Home_client" element={<Home_client products={products}/>} />
           <Route path="/Profile_client" element={<Profile_client handleSelectedClient={handleSelectedClient}/>} />
           <Route path="/Profile_client/UpdateClient" element={<UpdateClient selectedClient={selectedClient} />}/>      
@@ -113,7 +112,7 @@ function App() {
           <Route path="/Home_admin/All_seller" element={<All_seller />} />
           
           {/* Auth Routes */}
-          <Route path="/" element={<Login />} />
+          <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
         </Routes>
       </div>

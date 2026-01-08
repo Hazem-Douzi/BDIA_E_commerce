@@ -25,7 +25,18 @@ import {
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 
-const HomePage = ({ products }) =>:
+const HomePage = ({ products }) => {
+  const navigate = useNavigate();
+  const [cart, setCart] = useState([]);
+  const [wishlist, setWishlist] = useState([]);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [showCartDropdown, setShowCartDropdown] = useState(false);
+  const [currentSlide, setCurrentSlide] = useState(0);
+  const [timeLeft, setTimeLeft] = useState({
+    days: 2,
+    hours: 14,
+    minutes: 32,
+    seconds: 45
   });
 
   // Countdown timer
@@ -152,7 +163,7 @@ const HomePage = ({ products }) =>:
     localStorage.removeItem("token");
     localStorage.removeItem("user");
     delete axios.defaults.headers.common["Authorization"];
-    navigate("/");
+    navigate("/login");
   };
 
   const nextSlide = () => {
