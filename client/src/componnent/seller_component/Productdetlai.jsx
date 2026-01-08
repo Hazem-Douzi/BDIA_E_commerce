@@ -6,6 +6,7 @@ export default function ProductDetail({ selectedprod, fetchProducts }) {
   const navigate = useNavigate();
   const { id } = useParams();
   const [product, setProduct] = useState(selectedprod || null);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 // --Navigation
   const handleMyProducts = () => navigate("/Home_seller/my_products");
   const handleAddProduct = () => navigate("/Home_seller/add_product");
@@ -24,13 +25,19 @@ export default function ProductDetail({ selectedprod, fetchProducts }) {
   const handleDelete = async () => {
     try {
       const productId = product?.id_product || id;
-      await axios.delete(`http://127.0.0.1:8080/api/product/delete/${productId}`);
+      const token = localStorage.getItem("token");
+      await axios.delete(`http://127.0.0.1:8080/api/product/delete/${productId}`, {
+        headers: {
+          Authorization: token ? `Bearer ${token}` : undefined,
+        },
+      });
       alert("Product deleted successfully");
     fetchProducts()
     navigate("/Home_seller/my_products")
     } catch (error) {
       console.error("Delete error:", error);
-      alert("Error deleting product");
+      const message = error?.response?.data?.message || "Error deleting product";
+      alert(message);
     }
   };
 
@@ -106,7 +113,7 @@ export default function ProductDetail({ selectedprod, fetchProducts }) {
             <div>
               <h2 className="text-4xl font-bold text-gray-800">{product.product_name}</h2>
               <p className="text-lg text-gray-500 mt-1">
-                {product.category_name || (product.id_category ? `Category #${product.id_category}` : "Category: N/A")}
+                {product.category?.category_name || "Category: N/A"}
               </p>
               <p className="text-md text-gray-600 mt-4">{product.product_description}</p>
             </div>
@@ -128,7 +135,7 @@ export default function ProductDetail({ selectedprod, fetchProducts }) {
               </button>
               <button
                 className="px-5 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition"
-                onClick={handleDelete}
+                onClick={() => setShowDeleteConfirm(true)}
               >
                 Delete
               </button>
@@ -136,6 +143,33 @@ export default function ProductDetail({ selectedprod, fetchProducts }) {
           </div>
         </div>
       </div>
+      {showDeleteConfirm && (
+        <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl shadow-lg p-6 w-full max-w-md">
+            <h3 className="text-xl font-semibold text-gray-800 mb-2">Delete product?</h3>
+            <p className="text-gray-600 mb-6">
+              This action cannot be undone. Do you want to delete this product?
+            </p>
+            <div className="flex justify-end gap-3">
+              <button
+                className="px-4 py-2 rounded-md bg-gray-200 text-gray-800 hover:bg-gray-300"
+                onClick={() => setShowDeleteConfirm(false)}
+              >
+                Cancel
+              </button>
+              <button
+                className="px-4 py-2 rounded-md bg-red-600 text-white hover:bg-red-700"
+                onClick={() => {
+                  setShowDeleteConfirm(false);
+                  handleDelete();
+                }}
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
