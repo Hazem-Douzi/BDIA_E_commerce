@@ -19,7 +19,7 @@ def create_admin_user():
     db_config = {
         'host': os.getenv('MYSQL_HOST', 'localhost'),
         'user': os.getenv('MYSQL_USER', 'root'),
-        'password': os.getenv('MYSQL_PASSWORD', ''),
+        'password': os.getenv('MYSQL_PASSWORD', 'mysql'),
         'database': os.getenv('MYSQL_DATABASE', 'ECommerce')
     }
     
