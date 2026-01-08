@@ -121,6 +121,9 @@ def delete_review(review_id, client_id):
 def get_client_reviews(client_id):
     """Get all reviews for a client."""
     try:
+        if not client_id:
+            return jsonify({"message": "Client ID is required"}), 400
+        
         reviews = reviews_dao.list_reviews_by_client(client_id)
         result = []
         for review in reviews:
@@ -131,4 +134,5 @@ def get_client_reviews(client_id):
             result.append(review_dict)
         return jsonify(result), 200
     except Exception as error:
-        return jsonify({"message": str(error)}), 500
+        import traceback
+        return jsonify({"message": str(error), "traceback": traceback.format_exc()}), 500

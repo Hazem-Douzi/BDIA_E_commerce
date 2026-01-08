@@ -18,7 +18,7 @@ def create_review(product_id):
         from flask import jsonify
         return jsonify({'message': 'Unauthorized: Only clients can create reviews'}), 403
     data = request.get_json()
-    client_id = user.get('id')
+    client_id = user.get('id') or user.get('id_user')
     return review_controller.create_review(client_id, product_id, data)
 
 @bp.route('/<int:review_id>', methods=['PUT'])
@@ -30,7 +30,7 @@ def update_review(review_id):
         from flask import jsonify
         return jsonify({'message': 'Unauthorized: Only clients can update reviews'}), 403
     data = request.get_json()
-    client_id = user.get('id')
+    client_id = user.get('id') or user.get('id_user')
     return review_controller.update_review(review_id, client_id, data)
 
 @bp.route('/<int:review_id>', methods=['DELETE'])
@@ -41,7 +41,7 @@ def delete_review(review_id):
     if user.get('role') != 'client':
         from flask import jsonify
         return jsonify({'message': 'Unauthorized: Only clients can delete reviews'}), 403
-    client_id = user.get('id')
+    client_id = user.get('id') or user.get('id_user')
     return review_controller.delete_review(review_id, client_id)
 
 @bp.route('/my-reviews', methods=['GET'])
@@ -52,6 +52,6 @@ def get_client_reviews():
     if user.get('role') != 'client':
         from flask import jsonify
         return jsonify({'message': 'Unauthorized: Only clients can view their reviews'}), 403
-    client_id = user.get('id')
+    client_id = user.get('id') or user.get('id_user')
     return review_controller.get_client_reviews(client_id)
 

@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { Mail, Lock, Loader2, Eye, EyeOff, User } from 'lucide-react';
 import Scene3DBackground from './components/Scene3DBackground';
 import Hero3DDevice from './components/Hero3DDevice';
 
 const Register = () => {
+  const navigate = useNavigate();
   const [fullName, setFullname] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -65,7 +66,8 @@ const Register = () => {
         },
       });
 
-      window.location.href = '/';
+      // After successful registration, navigate to login page
+      navigate('/login');
       
     } catch (error) {
       setErrors({ 

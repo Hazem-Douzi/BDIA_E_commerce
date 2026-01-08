@@ -1,52 +1,56 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import Login from "./login.jsx";
 
-// Client importation
-import Productlist_client from "./componnent/client_comoponent/Productlist"
-import Home_client from "./componnent/client_comoponent/HomePage.jsx";
-import Register from "./register.jsx";
-import Profile_client from "./componnent/client_comoponent/Client_profile.jsx";
-import UpdateClient from "./componnent/client_comoponent/UpdateClient.jsx"
-import ProductDetlail from "./componnent/client_comoponent/Productdetlai"
-import { searchByname ,filterByBrand ,filterByState ,filterByCategory ,filterByminMaxPrice,filterByAvailable ,filterByDate} from "./componnent/client_comoponent/SearchMethods.jsx"
+// Auth pages
+import Login from "./pages/auth/Login.jsx";
+import Register from "./pages/auth/Register.jsx";
 
-// Seller importation
-import Home_seller from "./componnent/seller_component/HomePage.jsx";
-import Profile_seller from "./componnent/seller_component/Seller_profile.jsx";
-import Add_product from "./componnent/seller_component/Add_product.jsx";
-import Productlist from "./componnent/seller_component/Productlist";
-import Productdetlai from "./componnent/seller_component/Productdetlai";
-import Update_product from "./componnent/seller_component/Update_product.jsx";
-import UpdateSeller from "./componnent/seller_component/UpdateSeller"
+// Client pages
+import HomePage from "./pages/client/HomePage.jsx";
+import ProductList from "./pages/client/ProductList.jsx";
+import ProductDetail from "./pages/client/ProductDetail.jsx";
+import ClientProfile from "./pages/client/Profile.jsx";
+import UpdateClient from "./pages/client/UpdateProfile.jsx";
+import WishlistPage from "./pages/client/WishlistPage.jsx";
+import CheckoutPage from "./pages/client/CheckoutPage.jsx";
+import PaymentPage from "./pages/client/PaymentPage.jsx";
+import CheckoutSuccessPage from "./pages/client/CheckoutSuccessPage.jsx";
 
-// Admin importation
-import All_client from "./componnent/admin_component/All_client";
-import All_prod from "./componnent/admin_component/All_prod.jsx";
-import All_seller from "./componnent/admin_component/All_seller.jsx";
-import Home_admin from "./componnent/admin_component/Home_admin.jsx";
+// Seller pages
+import SellerHome from "./pages/seller/HomePage.jsx";
+import SellerProductList from "./pages/seller/ProductList.jsx";
+import SellerProductDetail from "./pages/seller/ProductDetail.jsx";
+import AddProduct from "./pages/seller/AddProduct.jsx";
+import UpdateProduct from "./pages/seller/UpdateProduct.jsx";
+import SellerProfile from "./pages/seller/Profile.jsx";
+import UpdateSeller from "./pages/seller/UpdateProfile.jsx";
+
+// Admin pages
+import AdminDashboard from "./pages/admin/Dashboard.jsx";
+import AllClients from "./pages/admin/AllClients.jsx";
+import AllProducts from "./pages/admin/AllProducts.jsx";
+import AllSellers from "./pages/admin/AllSellers.jsx";
+import AllCategories from "./pages/admin/AllCategories.jsx";
 
 function App() {
   const [products, setProducts] = useState([]);
   const [selectedprod, setSelectprod] = useState(null);
-  const [selectedSeller,setSelectedSeller]= useState(null);
-  const [selectedClient,setSelectedClient]= useState(null);
-
-
+  const [selectedSeller, setSelectedSeller] = useState(null);
+  const [selectedClient, setSelectedClient] = useState(null);
 
   const handleselectedProd = (prod) => {
     setSelectprod(prod);
   };
   
-    const handleSelectedSeller = (seller) => {
+  const handleSelectedSeller = (seller) => {
     setSelectedSeller(seller);
   };
-      const handleSelectedClient = (client) => {
+  
+  const handleSelectedClient = (client) => {
     setSelectedClient(client);
   };
 
-   
   const fetchProducts = async () => {
     try {
       const res = await axios.get("http://127.0.0.1:8080/api/product/All");
@@ -62,53 +66,36 @@ function App() {
   
   console.log("products", products);
 
-
- const handleFilter = async (filterFunc, value) => {
-  try {
-    const filtered = await filterFunc(value)
-    setProducts(filtered);
-  } catch (error) {
-    console.error("couldn't filter prods :", error)
-  }
-}
-  
   return (
     <Router>
       <div className="App">
         <Routes>
-
           {/* Client Routes */}
-          <Route path="/Home_client" element={<Home_client products={products}/>} />
-          <Route path="/Profile_client" element={<Profile_client handleSelectedClient={handleSelectedClient}/>} />
-          <Route path="/Profile_client/UpdateClient" element={<UpdateClient selectedClient={selectedClient} />}/>      
-          <Route path="/Home_client/Productlist_client" element={<Productlist_client
-      products={products}
-      handleselectedProd={handleselectedProd}
-      handleFilter={handleFilter}
-      searchByname={searchByname}
-      filterByBrand={filterByBrand}
-      filterByState={filterByState}
-      filterByCategory={filterByCategory}
-      filterByminMaxPrice={filterByminMaxPrice}
-      filterByAvailable={filterByAvailable}
-      filterByDate={filterByDate}
-      fetchProducts={fetchProducts}
-      />}/>
-          <Route path="/Productlist/ProductDetlail/:id" element={<ProductDetlail selectedprod={selectedprod}/>} />
+          <Route path="/" element={<HomePage products={products} />} />
+          <Route path="/Profile_client" element={<ClientProfile handleSelectedClient={handleSelectedClient} />} />
+          <Route path="/Profile_client/UpdateClient" element={<UpdateClient selectedClient={selectedClient} />} />      
+          <Route path="/Home_client/Productlist_client" element={<ProductList handleselectedProd={handleselectedProd} />} />
+          <Route path="/Productlist/ProductDetlail/:id" element={<ProductDetail selectedprod={selectedprod} />} />
+          <Route path="/wishlist" element={<WishlistPage />} />
+          <Route path="/checkout" element={<CheckoutPage />} />
+          <Route path="/checkout/payment" element={<PaymentPage />} />
+          <Route path="/checkout/success" element={<CheckoutSuccessPage />} />
           
           {/* Seller Routes */}
-          <Route path="/Home_seller" element={<Home_seller />} />
-          <Route path="/Home_seller/profile" element={<Profile_seller  handleSelectedSeller={handleSelectedSeller}/>} />
-          <Route path="/Home_seller/add_product" element={<Add_product fetchProducts={fetchProducts} selectedSeller={selectedSeller}/>} />
-          <Route path="/Home_seller/my_products" element={<Productlist  handleselectedProd={handleselectedProd}/>}/>
-          <Route path="/Home_seller/Productdetlai/:id" element={<Productdetlai selectedprod={selectedprod} fetchProducts={fetchProducts}/>}/>
-          <Route path="/Home_seller/Update_product/:id" element={<Update_product selectedprod={selectedprod} fetchProducts={fetchProducts}/>}/>
-          <Route path="/Home_seller/profile/UpdateSeller" element={<UpdateSeller selectedSeller={selectedSeller} />}/>          
+          <Route path="/Home_seller" element={<SellerHome />} />
+          <Route path="/Home_seller/profile" element={<SellerProfile handleSelectedSeller={handleSelectedSeller} />} />
+          <Route path="/Home_seller/add_product" element={<AddProduct fetchProducts={fetchProducts} selectedSeller={selectedSeller} />} />
+          <Route path="/Home_seller/my_products" element={<SellerProductList handleselectedProd={handleselectedProd} />} />
+          <Route path="/Home_seller/Productdetlai/:id" element={<SellerProductDetail selectedprod={selectedprod} fetchProducts={fetchProducts} />} />
+          <Route path="/Home_seller/Update_product/:id" element={<UpdateProduct selectedprod={selectedprod} fetchProducts={fetchProducts} />} />
+          <Route path="/Home_seller/profile/UpdateSeller" element={<UpdateSeller selectedSeller={selectedSeller} />} />          
+          
           {/* Admin Routes */}
-          <Route path="/Home_admin" element={<Home_admin />} />
-          <Route path="/Home_admin/All_client" element={<All_client />} />
-          <Route path="/Home_admin/All_prod" element={<All_prod />} />
-          <Route path="/Home_admin/All_seller" element={<All_seller />} />
+          <Route path="/Home_admin" element={<AdminDashboard />} />
+          <Route path="/Home_admin/All_client" element={<AllClients />} />
+          <Route path="/Home_admin/All_prod" element={<AllProducts />} />
+          <Route path="/Home_admin/All_seller" element={<AllSellers />} />
+          <Route path="/Home_admin/All_categories" element={<AllCategories />} />
           
           {/* Auth Routes */}
           <Route path="/login" element={<Login />} />

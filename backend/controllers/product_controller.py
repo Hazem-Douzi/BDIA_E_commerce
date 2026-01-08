@@ -3,12 +3,14 @@ import os
 from backend.database.dao import products as products_dao
 from backend.database.dao import product_images as images_dao
 from backend.database.dao import categories as categories_dao
+from backend.database.dao import subcategories as subcategories_dao
 from backend.database.dao import users as users_dao
 from backend.database.dao import seller_profiles as seller_profiles_dao
 from backend.controllers.serializers import (
     product_to_dict,
     product_image_to_dict,
     category_to_dict,
+    subcategory_to_dict,
     user_to_dict,
     seller_profile_to_dict,
 )
@@ -23,6 +25,11 @@ def _build_product_details(product):
         category = categories_dao.get_category(product["id_category"])
         if category:
             product_dict["category"] = category_to_dict(category)
+
+    if product.get("id_SubCategory"):
+        subcategory = subcategories_dao.get_subcategory(product["id_SubCategory"])
+        if subcategory:
+            product_dict["subcategory"] = subcategory_to_dict(subcategory)
 
     seller = users_dao.get_user_by_id(product["id_seller"])
     if seller:
@@ -152,6 +159,7 @@ def update_product(product_id, data, seller_id=None):
             "stock",
             "rating",
             "id_category",
+            "id_SubCategory",
         ]:
             if key in data:
                 update_fields[key] = data[key]
@@ -189,31 +197,85 @@ def update_product(product_id, data, seller_id=None):
 
 
 def search_products(query_params):
-    """Search products."""
+    """
+    Recherche complète de produits avec filtres SQL.
+    Tous les filtres sont appliqués côté backend via requêtes SQL pures MySQL.
+    Pas de filtrage frontend - tout se fait dans la base de données.
+    """
     try:
         conditions = []
         params = []
 
-        name = query_params.get("name")
-        if name:
-            conditions.append("product_name LIKE %s")
-            params.append(f"%{name}%")
+        # 1. Recherche par nom, marque ou description (recherche textuelle)
+        search_query = query_params.get("search") or query_params.get("name")
+        if search_query:
+            # Recherche dans product_name, brand, et product_description
+            conditions.append("(product_name LIKE %s OR brand LIKE %s OR product_description LIKE %s)")
+            search_pattern = f"%{search_query}%"
+            params.extend([search_pattern, search_pattern, search_pattern])
 
-        brand = query_params.get("brand")
-        if brand:
-            conditions.append("brand LIKE %s")
-            params.append(f"%{brand}%")
+        # 2. Filtre par marque(s) - supporte plusieurs marques
+        brands = []
+        brand_param = query_params.get("brand") or query_params.get("brands")
+        if brand_param and not search_query:  # Si search_query existe, on ignore brand séparé
+            # Supporte plusieurs marques séparées par des virgules
+            if isinstance(brand_param, str) and ',' in brand_param:
+                brands = [b.strip() for b in brand_param.split(',')]
+            elif isinstance(brand_param, list):
+                brands = brand_param
+            else:
+                brands = [brand_param]
+            
+            if brands:
+                placeholders = ",".join(["%s"] * len(brands))
+                conditions.append(f"brand IN ({placeholders})")
+                params.extend([f"%{b}%" for b in brands])
 
-        category = query_params.get("category")
-        if category:
-            matched = categories_dao.get_category_by_name(category)
-            if not matched:
-                return jsonify([]), 200
-            conditions.append("id_category = %s")
-            params.append(matched["id_category"])
+        # 3. Filtre par catégorie(s) - supporte plusieurs catégories
+        category_ids = []
+        category_param = query_params.get("category_id") or query_params.get("category_ids")
+        if category_param:
+            # Supporte plusieurs IDs séparés par des virgules
+            if isinstance(category_param, str) and ',' in category_param:
+                category_ids = [int(cid.strip()) for cid in category_param.split(',')]
+            elif isinstance(category_param, list):
+                category_ids = [int(cid) for cid in category_param]
+            else:
+                category_ids = [int(category_param)]
+        
+        # Si pas d'ID mais un nom de catégorie
+        if not category_ids:
+            category = query_params.get("category")
+            if category:
+                matched = categories_dao.get_category_by_name(category)
+                if matched:
+                    category_ids = [matched["id_category"]]
+        
+        if category_ids:
+            placeholders = ",".join(["%s"] * len(category_ids))
+            conditions.append(f"id_category IN ({placeholders})")
+            params.extend(category_ids)
 
-        min_price = query_params.get("minPrice")
-        max_price = query_params.get("maxPrice")
+        # 4. Filtre par sous-catégorie(s)
+        subcategory_ids = []
+        subcategory_param = query_params.get("subcategory_id") or query_params.get("subcategory_ids")
+        if subcategory_param:
+            # Supporte plusieurs IDs séparés par des virgules
+            if isinstance(subcategory_param, str) and ',' in subcategory_param:
+                subcategory_ids = [int(sid.strip()) for sid in subcategory_param.split(',')]
+            elif isinstance(subcategory_param, list):
+                subcategory_ids = [int(sid) for sid in subcategory_param]
+            else:
+                subcategory_ids = [int(subcategory_param)]
+        
+        if subcategory_ids:
+            placeholders = ",".join(["%s"] * len(subcategory_ids))
+            conditions.append(f"id_SubCategory IN ({placeholders})")
+            params.extend(subcategory_ids)
+
+        # 5. Filtre par prix (min et max)
+        min_price = query_params.get("minPrice") or query_params.get("min_price")
+        max_price = query_params.get("maxPrice") or query_params.get("max_price")
         if min_price and max_price:
             conditions.append("price BETWEEN %s AND %s")
             params.extend([float(min_price), float(max_price)])
@@ -224,30 +286,124 @@ def search_products(query_params):
             conditions.append("price <= %s")
             params.append(float(max_price))
 
-        category_id = query_params.get("category_id")
-        if category_id:
-            conditions.append("id_category = %s")
-            params.append(int(category_id))
-
-        stock = query_params.get("stock")
+        # 6. Filtre par disponibilité (stock)
+        stock = query_params.get("stock") or query_params.get("available")
         if stock:
-            if stock.lower() == "available":
+            if stock.lower() == "available" or stock.lower() == "true":
                 conditions.append("stock > 0")
-            elif stock.lower() == "out":
+            elif stock.lower() == "out" or stock.lower() == "false" or stock.lower() == "unavailable":
                 conditions.append("stock = 0")
 
-        products = products_dao.search_products(conditions, params)
+        # 7. Filtre par note minimale (rating)
+        min_rating = query_params.get("minRating") or query_params.get("rating")
+        if min_rating:
+            conditions.append("rating >= %s")
+            params.append(float(min_rating))
+
+        # 8. Tri (ORDER BY) - supporte plusieurs options
+        sort_by = query_params.get("sortBy") or query_params.get("sort")
+        order_by = None
+        if sort_by:
+            sort_mapping = {
+                "price_asc": "price ASC",
+                "price_desc": "price DESC",
+                "name_asc": "product_name ASC",
+                "name_desc": "product_name DESC",
+                "rating_desc": "rating DESC",
+                "rating_asc": "rating ASC",
+                "newest": "createdAtt DESC",
+                "oldest": "createdAtt ASC"
+            }
+            order_by = sort_mapping.get(sort_by, "createdAtt DESC")
+        else:
+            order_by = "createdAtt DESC"
+
+        # 9. Pagination
+        page = int(query_params.get("page", 1))
+        per_page = int(query_params.get("perPage") or query_params.get("limit", 24))
+        offset = (page - 1) * per_page
+
+        # Compter le total pour la pagination
+        total = products_dao.count_products(conditions, params)
+
+        # Récupérer les produits avec pagination
+        products = products_dao.search_products(conditions, params, order_by=order_by, limit=per_page, offset=offset)
+        
+        # Construire la réponse avec les informations complètes
         result = []
         for product in products:
             product_dict = product_to_dict(product)
+            
+            # Ajouter les images
             images = images_dao.list_images_by_product(product["id_product"])
             product_dict["images"] = [product_image_to_dict(img) for img in images]
+            
+            # Ajouter la catégorie si disponible
             if product.get("id_category"):
                 category = categories_dao.get_category(product["id_category"])
                 if category:
                     product_dict["category"] = category_to_dict(category)
+            
+            # Ajouter la sous-catégorie si disponible
+            if product.get("id_SubCategory"):
+                subcategory = subcategories_dao.get_subcategory(product["id_SubCategory"])
+                if subcategory:
+                    product_dict["subcategory"] = subcategory_to_dict(subcategory)
+            
             result.append(product_dict)
 
+        # Retourner avec métadonnées de pagination
+        total_pages = (total + per_page - 1) // per_page if total > 0 else 0
+        
+        return jsonify({
+            "products": result,
+            "pagination": {
+                "total": total,
+                "page": page,
+                "per_page": per_page,
+                "total_pages": total_pages,
+                "has_next": page < total_pages,
+                "has_prev": page > 1
+            }
+        }), 200
+    except Exception as error:
+        return jsonify({"message": str(error)}), 500
+
+
+def get_top_sellers(limit=5):
+    """Get top sellers by product count."""
+    try:
+        top_sellers_data = products_dao.get_top_sellers_by_product_count(limit)
+        result = []
+        
+        for seller_data in top_sellers_data:
+            seller_id = seller_data["id_seller"]
+            product_count = seller_data["product_count"]
+            
+            # Get seller user info
+            seller = users_dao.get_user_by_id(seller_id)
+            if not seller or seller["rolee"] != "seller":
+                continue
+                
+            seller_dict = user_to_dict(seller)
+            
+            # Get seller profile (shop name, etc.)
+            profile = seller_profiles_dao.get_profile_by_user_id(seller_id)
+            if profile:
+                seller_dict["seller_profile"] = seller_profile_to_dict(profile)
+            
+            # Get first product image as shop image
+            products = products_dao.list_products_by_seller(seller_id)
+            shop_image = None
+            if products and len(products) > 0:
+                first_product_images = images_dao.list_images_by_product(products[0]["id_product"])
+                if first_product_images and len(first_product_images) > 0:
+                    shop_image = first_product_images[0]["imageURL"]
+            
+            seller_dict["product_count"] = product_count
+            seller_dict["shop_image"] = shop_image
+            result.append(seller_dict)
+            
         return jsonify(result), 200
     except Exception as error:
         return jsonify({"message": str(error)}), 500

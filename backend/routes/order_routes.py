@@ -13,7 +13,7 @@ def create_order():
         from flask import jsonify
         return jsonify({'message': 'Unauthorized: Only clients can create orders'}), 403
     data = request.get_json() or {}
-    client_id = user.get('id')
+    client_id = user.get('id') or user.get('id_user')
     return order_controller.create_order(client_id, data)
 
 @bp.route('/', methods=['GET'])
@@ -24,7 +24,7 @@ def get_client_orders():
     if user.get('role') != 'client':
         from flask import jsonify
         return jsonify({'message': 'Unauthorized: Only clients can view orders'}), 403
-    client_id = user.get('id')
+    client_id = user.get('id') or user.get('id_user')
     return order_controller.get_client_orders(client_id)
 
 @bp.route('/<int:order_id>', methods=['GET'])
@@ -34,7 +34,7 @@ def get_order(order_id):
     user = request.user
     client_id = None
     if user.get('role') == 'client':
-        client_id = user.get('id')
+        client_id = user.get('id') or user.get('id_user')
     return order_controller.get_order(order_id, client_id)
 
 @bp.route('/<int:order_id>/cancel', methods=['PUT'])
@@ -45,6 +45,6 @@ def cancel_order(order_id):
     if user.get('role') != 'client':
         from flask import jsonify
         return jsonify({'message': 'Unauthorized: Only clients can cancel orders'}), 403
-    client_id = user.get('id')
+    client_id = user.get('id') or user.get('id_user')
     return order_controller.cancel_order(order_id, client_id)
 

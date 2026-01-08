@@ -21,8 +21,23 @@ def get_products_by_seller(seller_id):
 
 @bp.route('/search', methods=['GET'])
 def search_product():
-    """Recherche des produits (public)"""
-    query_params = request.args.to_dict()
+    """
+    Recherche et filtrage complet des produits via requêtes SQL.
+    Tous les filtres sont appliqués côté backend - pas de filtrage frontend.
+    Supporte: recherche, catégories, sous-catégories, prix, stock, rating, tri, pagination
+    """
+    # Convertir request.args en dict mais gérer les paramètres multiples
+    query_params = {}
+    for key, value in request.args.items():
+        # Si plusieurs valeurs pour la même clé, les combiner
+        if key in query_params:
+            if isinstance(query_params[key], list):
+                query_params[key].append(value)
+            else:
+                query_params[key] = [query_params[key], value]
+        else:
+            query_params[key] = value
+    
     return product_controller.search_products(query_params)
 
 @bp.route('/add', methods=['POST'])
@@ -35,7 +50,7 @@ def add_product():
         from flask import jsonify
         return jsonify({'message': 'Unauthorized: Only sellers can add products'}), 403
     data = req.get_json()
-    seller_id = user.get('id')
+    seller_id = user.get('id') or user.get('id_user')
     return product_controller.add_product(data, seller_id)
 
 @bp.route('/delete/<int:product_id>', methods=['DELETE'])
@@ -46,7 +61,7 @@ def delete_product(product_id):
     user = req.user
     seller_id = None
     if user.get('role') == 'seller':
-        seller_id = user.get('id')
+        seller_id = user.get('id') or user.get('id_user')
     return product_controller.delete_product(product_id, seller_id)
 
 @bp.route('/update/<int:product_id>', methods=['PUT'])
@@ -58,5 +73,11 @@ def update_product(product_id):
     data = req.get_json()
     seller_id = None
     if user.get('role') == 'seller':
-        seller_id = user.get('id')
+        seller_id = user.get('id') or user.get('id_user')
     return product_controller.update_product(product_id, data, seller_id)
+
+@bp.route('/top-sellers', methods=['GET'])
+def get_top_sellers():
+    """Récupère les meilleurs vendeurs par nombre de produits (public)"""
+    limit = request.args.get('limit', 5, type=int)
+    return product_controller.get_top_sellers(limit)

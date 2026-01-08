@@ -12,7 +12,7 @@ def get_cart():
     if user.get('role') != 'client':
         from flask import jsonify
         return jsonify({'message': 'Unauthorized: Only clients can access cart'}), 403
-    client_id = user.get('id')
+    client_id = user.get('id') or user.get('id_user')
     return cart_controller.get_cart(client_id)
 
 @bp.route('/add', methods=['POST'])
@@ -24,7 +24,7 @@ def add_to_cart():
         from flask import jsonify
         return jsonify({'message': 'Unauthorized: Only clients can add to cart'}), 403
     data = request.get_json()
-    client_id = user.get('id')
+    client_id = user.get('id') or user.get('id_user')
     return cart_controller.add_to_cart(client_id, data)
 
 @bp.route('/item/<int:cart_item_id>', methods=['PUT'])
@@ -36,7 +36,7 @@ def update_cart_item(cart_item_id):
         from flask import jsonify
         return jsonify({'message': 'Unauthorized: Only clients can update cart'}), 403
     data = request.get_json()
-    client_id = user.get('id')
+    client_id = user.get('id') or user.get('id_user')
     return cart_controller.update_cart_item(cart_item_id, client_id, data)
 
 @bp.route('/item/<int:cart_item_id>', methods=['DELETE'])
@@ -47,7 +47,7 @@ def remove_from_cart(cart_item_id):
     if user.get('role') != 'client':
         from flask import jsonify
         return jsonify({'message': 'Unauthorized: Only clients can remove from cart'}), 403
-    client_id = user.get('id')
+    client_id = user.get('id') or user.get('id_user')
     return cart_controller.remove_from_cart(cart_item_id, client_id)
 
 @bp.route('/clear', methods=['DELETE'])
@@ -58,6 +58,6 @@ def clear_cart():
     if user.get('role') != 'client':
         from flask import jsonify
         return jsonify({'message': 'Unauthorized: Only clients can clear cart'}), 403
-    client_id = user.get('id')
+    client_id = user.get('id') or user.get('id_user')
     return cart_controller.clear_cart(client_id)
 

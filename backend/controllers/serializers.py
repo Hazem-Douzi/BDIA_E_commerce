@@ -50,6 +50,7 @@ def product_to_dict(row):
         "rating": row.get("rating"),
         "id_seller": row.get("id_seller"),
         "id_category": row.get("id_category"),
+        "id_SubCategory": row.get("id_SubCategory"),
         "createdAtt": to_iso(row.get("createdAtt")),
         "updatedAt": to_iso(row.get("updatedAt")),
     }
@@ -109,6 +110,21 @@ def order_to_dict(row):
         "payment_status": row.get("payment_status"),
         "order_status": row.get("order_status"),
         "order_createdAt": to_iso(row.get("order_createdAt")),
+    }
+
+
+def payment_card_to_dict(row):
+    if not row:
+        return None
+    return {
+        "id_payment_card": row.get("id_payment_card"),
+        "id_client": row.get("id_client"),
+        "card_number": row.get("card_number"),
+        "card_holder_name": row.get("card_holder_name"),
+        "expiry_date": row.get("expiry_date"),
+        "cvv": row.get("cvv"),
+        "is_default": bool(row.get("is_default")),
+        "created_at": to_iso(row.get("created_at")),
     }
 
 

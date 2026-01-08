@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { Mail, Lock, Loader2, Eye, EyeOff } from 'lucide-react';
 import Scene3DBackground from './components/Scene3DBackground';
 import Hero3DDevice from './components/Hero3DDevice';
 
 const Login = () => {
+  const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -64,11 +65,11 @@ const Login = () => {
         axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
         
         if (role === 'admin') {
-          window.location.href = 'http://localhost:5173/Home_admin';
+          navigate('/Home_admin');
         } else if (role === 'seller') {
-          window.location.href = 'http://localhost:5173/Home_seller';
+          navigate('/Home_seller');
         } else if (role === 'client') {
-          window.location.href = 'http://localhost:5173/Home_client';
+          navigate('/');
         } 
       }
     } catch (error) {

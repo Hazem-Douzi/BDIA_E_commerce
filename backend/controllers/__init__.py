@@ -8,7 +8,10 @@ from . import admin_controller
 from . import cart_controller
 from . import order_controller
 from . import review_controller
+from . import payment_card_controller
 from . import payment_controller
+from . import wishlist_controller
+from . import stripe_controller
 
 __all__ = [
     'auth_controller',
@@ -20,5 +23,7 @@ __all__ = [
     'cart_controller',
     'order_controller',
     'review_controller',
-    'payment_controller'
+    'payment_controller',
+    'wishlist_controller',
+    'stripe_controller'
 ]
