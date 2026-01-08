@@ -22,7 +22,14 @@ def get_cart(client_id):
 
         result = cart_to_dict(cart)
         if not result:
-            return jsonify({"message": "Failed to serialize cart"}), 500
+            # Return empty cart instead of error
+            return jsonify({
+                "id_cart": cart.get("id_cart") if cart else None,
+                "id_client": client_id,
+                "cart_createdAt": None,
+                "items": [],
+                "total": 0
+            }), 200
         result["items"] = []
         total = 0
 

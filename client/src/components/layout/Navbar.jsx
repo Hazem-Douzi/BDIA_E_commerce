@@ -36,8 +36,11 @@ const Navbar = () => {
     }
 
     try {
-      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-      const response = await axios.get('http://127.0.0.1:8080/api/cart/');
+      const response = await axios.get('http://127.0.0.1:8080/api/cart/', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
       if (response.data && response.data.items) {
         // Transform cart items to match expected format
         const cartItems = response.data.items.map(item => ({
@@ -50,7 +53,10 @@ const Navbar = () => {
         setCart([]);
       }
     } catch (error) {
-      console.error('Failed to fetch cart:', error);
+      // Only log error if it's not a 401/403 (user not logged in)
+      if (error.response?.status !== 401 && error.response?.status !== 403) {
+        console.error('Failed to fetch cart:', error);
+      }
       setCart([]);
     }
   };
@@ -64,11 +70,17 @@ const Navbar = () => {
     }
 
     try {
-      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-      const response = await axios.get('http://127.0.0.1:8080/api/wishlist/');
+      const response = await axios.get('http://127.0.0.1:8080/api/wishlist/', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
       setWishlist(Array.isArray(response.data) ? response.data : []);
     } catch (error) {
-      console.error('Failed to fetch wishlist:', error);
+      // Only log error if it's not a 401/403 (user not logged in)
+      if (error.response?.status !== 401 && error.response?.status !== 403) {
+        console.error('Failed to fetch wishlist:', error);
+      }
       setWishlist([]);
     }
   };

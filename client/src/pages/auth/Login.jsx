@@ -43,16 +43,22 @@ const Login = () => {
     try {
       const response = await axios.post('http://127.0.0.1:8080/api/auth/login', {
         email,
-        pass_word: password
+        password: password
       });
 
       if (response.data.token) {
-        localStorage.setItem('token', response.data.token);
-        localStorage.setItem('user', JSON.stringify(response.data.user));
-        axios.defaults.headers.common['Authorization'] = `Bearer ${response.data.token}`;
+        const { token, userId, username, email, role } = response.data;
+        
+        localStorage.setItem('token', token);
+        localStorage.setItem('user', JSON.stringify({
+          id: userId,
+          username,
+          email,
+          role: role
+        }));
+        axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
         
         // Redirect based on role
-        const role = response.data.user.rolee || response.data.user.role;
         if (role === 'admin') {
           navigate('/Home_admin');
         } else if (role === 'seller') {
