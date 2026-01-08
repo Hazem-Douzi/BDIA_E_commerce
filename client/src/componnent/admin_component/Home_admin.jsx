@@ -45,36 +45,36 @@ export default function AdminHome() {
 
   return (
     <div className="min-h-screen bg-slate-50">
-      <header className="sticky top-0 z-50 bg-white border-b border-gray-200 shadow-sm">
+      <header className="sticky top-0 z-50 bg-white border-b border-slate-200">
         <div className="max-w-7xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-8">
               <div className="text-2xl font-bold text-slate-900">ShopEase</div>
-              <nav className="hidden md:flex space-x-1">
+              <nav className="hidden md:flex space-x-6">
                 <button
                   onClick={handle_home_click}
-                  className="flex items-center space-x-2 px-3 py-2 text-slate-600 hover:text-slate-900 hover:bg-gray-100 rounded-lg transition-all duration-200 font-medium"
+                  className="flex items-center space-x-2 px-3 py-2 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-all duration-200 font-medium"
                 >
                   <Home className="w-4 h-4" />
                   <span>Home</span>
                 </button>
                 <button
                   onClick={handle_All_Client_Click}
-                  className="flex items-center space-x-2 px-3 py-2 text-slate-600 hover:text-slate-900 hover:bg-gray-100 rounded-lg transition-all duration-200 font-medium"
+                  className="flex items-center space-x-2 px-3 py-2 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-all duration-200 font-medium"
                 >
                   <UserCheck className="w-4 h-4" />
                   <span>Clients</span>
                 </button>
                 <button
                   onClick={handle_All_Seller_Click}
-                  className="flex items-center space-x-2 px-3 py-2 text-slate-600 hover:text-slate-900 hover:bg-gray-100 rounded-lg transition-all duration-200 font-medium"
+                  className="flex items-center space-x-2 px-3 py-2 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-all duration-200 font-medium"
                 >
                   <Store className="w-4 h-4" />
                   <span>Sellers</span>
                 </button>
                 <button
                   onClick={handle_All_products_Click}
-                  className="flex items-center space-x-2 px-3 py-2 text-slate-600 hover:text-slate-900 hover:bg-gray-100 rounded-lg transition-all duration-200 font-medium"
+                  className="flex items-center space-x-2 px-3 py-2 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-all duration-200 font-medium"
                 >
                   <Package className="w-4 h-4" />
                   <span>Products</span>
@@ -83,7 +83,7 @@ export default function AdminHome() {
             </div>
             <button
               onClick={handleLogoutClick}
-              className="flex items-center space-x-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg shadow-sm hover:shadow-md transition-all duration-200 font-medium"
+              className="flex items-center space-x-2 px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg shadow-sm hover:shadow-md transition-all duration-200 font-medium"
             >
               <LogOut className="w-4 h-4" />
               <span>Logout</span>
@@ -100,11 +100,11 @@ export default function AdminHome() {
 
         {stats && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            <div className="bg-white rounded-xl p-6 border border-slate-200 hover:shadow-lg transition-shadow duration-200">
+            <div className="bg-white rounded-lg p-6 border border-slate-100">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-slate-600 mb-1">Total Users</p>
                   <p className="text-3xl font-bold text-slate-900">{stats.total_users}</p>
+                  <p className="text-sm text-slate-600 mt-1">Total Users</p>
                 </div>
                 <div className="p-3 bg-slate-100 rounded-lg">
                   <Users className="w-6 h-6 text-slate-600" />
@@ -112,11 +112,11 @@ export default function AdminHome() {
               </div>
             </div>
 
-            <div className="bg-white rounded-xl p-6 border border-slate-200 hover:shadow-lg transition-shadow duration-200">
+            <div className="bg-white rounded-lg p-6 border border-slate-100">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-slate-600 mb-1">Total Clients</p>
                   <p className="text-3xl font-bold text-slate-900">{stats.total_clients}</p>
+                  <p className="text-sm text-slate-600 mt-1">Total Clients</p>
                 </div>
                 <div className="p-3 bg-slate-100 rounded-lg">
                   <UserCheck className="w-6 h-6 text-slate-600" />
@@ -124,11 +124,11 @@ export default function AdminHome() {
               </div>
             </div>
 
-            <div className="bg-white rounded-xl p-6 border border-slate-200 hover:shadow-lg transition-shadow duration-200">
+            <div className="bg-white rounded-lg p-6 border border-slate-100">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-slate-600 mb-1">Total Sellers</p>
                   <p className="text-3xl font-bold text-slate-900">{stats.total_sellers}</p>
+                  <p className="text-sm text-slate-600 mt-1">Total Sellers</p>
                 </div>
                 <div className="p-3 bg-slate-100 rounded-lg">
                   <Store className="w-6 h-6 text-slate-600" />
@@ -136,66 +136,62 @@ export default function AdminHome() {
               </div>
             </div>
 
-            <div className="bg-white rounded-xl p-6 border border-slate-200 hover:shadow-lg transition-shadow duration-200">
+            <div className="bg-white rounded-lg p-6 border border-slate-100">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-slate-600 mb-1">Total Products</p>
                   <p className="text-3xl font-bold text-slate-900">{stats.total_products}</p>
+                  <p className="text-sm text-slate-600 mt-1">Total Products</p>
                 </div>
                 <div className="p-3 bg-slate-100 rounded-lg">
                   <Package className="w-6 h-6 text-slate-600" />
                 </div>
               </div>
             </div>
-          </div>
-        )}
 
-        {stats && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            <div className="bg-white rounded-xl p-6 border border-slate-200 hover:shadow-lg transition-shadow duration-200">
+            <div className="bg-white rounded-lg p-6 border border-slate-100">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-slate-600 mb-1">Total Orders</p>
-                  <p className="text-2xl font-bold text-slate-900">{stats.total_orders}</p>
+                  <p className="text-3xl font-bold text-slate-900">{stats.total_orders}</p>
+                  <p className="text-sm text-slate-600 mt-1">Total Orders</p>
                 </div>
-                <div className="p-2 bg-slate-100 rounded-lg">
-                  <ShoppingBag className="w-5 h-5 text-slate-600" />
+                <div className="p-3 bg-slate-100 rounded-lg">
+                  <ShoppingBag className="w-6 h-6 text-slate-600" />
                 </div>
               </div>
             </div>
 
-            <div className="bg-white rounded-xl p-6 border border-slate-200 hover:shadow-lg transition-shadow duration-200">
+            <div className="bg-white rounded-lg p-6 border border-slate-100">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-slate-600 mb-1">Pending Orders</p>
-                  <p className="text-2xl font-bold text-slate-900">{stats.pending_orders}</p>
+                  <p className="text-3xl font-bold text-slate-900">{stats.pending_orders}</p>
+                  <p className="text-sm text-slate-600 mt-1">Pending Orders</p>
                 </div>
-                <div className="p-2 bg-slate-100 rounded-lg">
-                  <Clock className="w-5 h-5 text-slate-600" />
+                <div className="p-3 bg-slate-100 rounded-lg">
+                  <Clock className="w-6 h-6 text-slate-600" />
                 </div>
               </div>
             </div>
 
-            <div className="bg-white rounded-xl p-6 border border-slate-200 hover:shadow-lg transition-shadow duration-200">
+            <div className="bg-white rounded-lg p-6 border border-slate-100">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-slate-600 mb-1">Categories</p>
-                  <p className="text-2xl font-bold text-slate-900">{stats.total_categories}</p>
+                  <p className="text-3xl font-bold text-slate-900">{stats.total_categories}</p>
+                  <p className="text-sm text-slate-600 mt-1">Categories</p>
                 </div>
-                <div className="p-2 bg-slate-100 rounded-lg">
-                  <Layers className="w-5 h-5 text-slate-600" />
+                <div className="p-3 bg-slate-100 rounded-lg">
+                  <Layers className="w-6 h-6 text-slate-600" />
                 </div>
               </div>
             </div>
 
-            <div className="bg-white rounded-xl p-6 border border-slate-200 hover:shadow-lg transition-shadow duration-200">
+            <div className="bg-white rounded-lg p-6 border border-slate-100">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-slate-600 mb-1">Pending Verifications</p>
-                  <p className="text-2xl font-bold text-slate-900">{stats.pending_seller_verifications}</p>
+                  <p className="text-3xl font-bold text-slate-900">{stats.pending_seller_verifications}</p>
+                  <p className="text-sm text-slate-600 mt-1">Pending Verifications</p>
                 </div>
-                <div className="p-2 bg-slate-100 rounded-lg">
-                  <Shield className="w-5 h-5 text-slate-600" />
+                <div className="p-3 bg-slate-100 rounded-lg">
+                  <Shield className="w-6 h-6 text-slate-600" />
                 </div>
               </div>
             </div>
@@ -206,46 +202,46 @@ export default function AdminHome() {
           <h2 className="text-xl font-semibold text-slate-900 mb-6">Quick Actions</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div
-              className="bg-white rounded-xl p-6 border border-slate-200 hover:shadow-lg transition-all duration-200 cursor-pointer group"
+              className="bg-white rounded-lg p-6 border border-slate-100 hover:shadow-md transition-all duration-200 cursor-pointer"
               onClick={handle_All_Client_Click}
             >
-              <div className="flex items-center space-x-4 mb-4">
-                <div className="p-3 bg-slate-100 rounded-lg group-hover:bg-slate-200 transition-colors">
+              <div className="flex items-center space-x-4">
+                <div className="p-3 bg-slate-100 rounded-lg">
                   <UserCheck className="w-6 h-6 text-slate-600" />
                 </div>
                 <div>
                   <h3 className="text-lg font-semibold text-slate-900">Manage Clients</h3>
-                  <p className="text-sm text-slate-600">View and manage all registered clients</p>
+                  <p className="text-sm text-slate-600 mt-1">View and manage all registered clients</p>
                 </div>
               </div>
             </div>
 
             <div
-              className="bg-white rounded-xl p-6 border border-slate-200 hover:shadow-lg transition-all duration-200 cursor-pointer group"
+              className="bg-white rounded-lg p-6 border border-slate-100 hover:shadow-md transition-all duration-200 cursor-pointer"
               onClick={handle_All_Seller_Click}
             >
-              <div className="flex items-center space-x-4 mb-4">
-                <div className="p-3 bg-slate-100 rounded-lg group-hover:bg-slate-200 transition-colors">
+              <div className="flex items-center space-x-4">
+                <div className="p-3 bg-slate-100 rounded-lg">
                   <Store className="w-6 h-6 text-slate-600" />
                 </div>
                 <div>
                   <h3 className="text-lg font-semibold text-slate-900">Manage Sellers</h3>
-                  <p className="text-sm text-slate-600">Handle seller profiles and verifications</p>
+                  <p className="text-sm text-slate-600 mt-1">Handle seller profiles and verifications</p>
                 </div>
               </div>
             </div>
 
             <div
-              className="bg-white rounded-xl p-6 border border-slate-200 hover:shadow-lg transition-all duration-200 cursor-pointer group"
+              className="bg-white rounded-lg p-6 border border-slate-100 hover:shadow-md transition-all duration-200 cursor-pointer"
               onClick={handle_All_products_Click}
             >
-              <div className="flex items-center space-x-4 mb-4">
-                <div className="p-3 bg-slate-100 rounded-lg group-hover:bg-slate-200 transition-colors">
+              <div className="flex items-center space-x-4">
+                <div className="p-3 bg-slate-100 rounded-lg">
                   <Package className="w-6 h-6 text-slate-600" />
                 </div>
                 <div>
                   <h3 className="text-lg font-semibold text-slate-900">Manage Products</h3>
-                  <p className="text-sm text-slate-600">Approve, edit, or remove products</p>
+                  <p className="text-sm text-slate-600 mt-1">Approve, edit, or remove products</p>
                 </div>
               </div>
             </div>

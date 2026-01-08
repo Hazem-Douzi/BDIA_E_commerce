@@ -21,6 +21,66 @@ from backend.controllers.serializers import (
 )
 
 
+def get_admin_stats():
+    """Get comprehensive statistics for admin dashboard."""
+    try:
+        # Get user statistics
+        total_users = len(users_dao.list_users())
+        total_clients = len(users_dao.list_users_by_role("client"))
+        total_sellers = len(users_dao.list_users_by_role("seller"))
+        total_admins = len(users_dao.list_users_by_role("admin"))
+
+        # Get product statistics
+        all_products = products_dao.list_products()
+        total_products = len(all_products)
+        active_products = len([p for p in all_products if p.get('stock', 0) > 0])
+
+        # Get order statistics
+        all_orders = orders_dao.list_orders()
+        total_orders = len(all_orders)
+        pending_orders = len([o for o in all_orders if o.get('order_status') == 'pending'])
+        completed_orders = len([o for o in all_orders if o.get('order_status') == 'completed'])
+
+        # Get payment statistics
+        all_payments = payments_dao.list_payments()
+        total_payments = len(all_payments)
+        successful_payments = len([p for p in all_payments if p.get('payment_status') == 'paid'])
+        total_revenue = sum(float(p.get('payment_amount', 0)) for p in all_payments if p.get('payment_status') == 'paid')
+
+        # Get category statistics
+        total_categories = len(categories_dao.list_categories())
+
+        stats = {
+            "users": {
+                "total": total_users,
+                "clients": total_clients,
+                "sellers": total_sellers,
+                "admins": total_admins
+            },
+            "products": {
+                "total": total_products,
+                "active": active_products
+            },
+            "orders": {
+                "total": total_orders,
+                "pending": pending_orders,
+                "completed": completed_orders
+            },
+            "payments": {
+                "total": total_payments,
+                "successful": successful_payments,
+                "total_revenue": float(total_revenue)
+            },
+            "categories": {
+                "total": total_categories
+            }
+        }
+
+        return jsonify(stats), 200
+    except Exception as error:
+        return jsonify({"message": str(error)}), 500
+
+
 def get_all_users():
     try:
         users = users_dao.list_users()

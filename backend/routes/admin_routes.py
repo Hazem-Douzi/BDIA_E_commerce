@@ -7,6 +7,12 @@ bp = Blueprint('admin', __name__)
 # Décorateur pour vérifier que l'utilisateur est admin
 admin_only = check_role(['admin'])
 
+# ============ STATISTIQUES ============
+@bp.route('/stats', methods=['GET'])
+@admin_only
+def get_admin_stats():
+    return admin_controller.get_admin_stats()
+
 # ============ UTILISATEURS ============
 @bp.route('/users', methods=['GET'])
 @admin_only

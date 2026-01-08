@@ -7,6 +7,12 @@ const HomePage = ({products}) => {
   const navigate = useNavigate();
   const [cart, setCart] = useState([]);
   const [showCartDropdown, setShowCartDropdown] = useState(false);
+  const [homeData, setHomeData] = useState({
+    featured_products: [],
+    categories: [],
+    recent_products: []
+  });
+  const [loading, setLoading] = useState(true);
   const [timeLeft, setTimeLeft] = useState({
     days: 2,
     hours: 14,
@@ -15,36 +21,28 @@ const HomePage = ({products}) => {
   });
 
 
+  // Fetch home page data from the new API
   useEffect(() => {
-    const timer = setInterval(() => {
-      setTimeLeft(prevTime => {
-        if (prevTime.seconds > 0) {
-          return { ...prevTime, seconds: prevTime.seconds - 1 };
-        } else if (prevTime.minutes > 0) {
-          return { ...prevTime, minutes: prevTime.minutes - 1, seconds: 59 };
-        } else if (prevTime.hours > 0) {
-          return { ...prevTime, hours: prevTime.hours - 1, minutes: 59, seconds: 59 };
-        } else if (prevTime.days > 0) {
-          return { ...prevTime, days: prevTime.days - 1, hours: 23, minutes: 59, seconds: 59 };
-        }
-        return prevTime;
-      });
-    }, 1000);
+    const fetchHomeData = async () => {
+      try {
+        setLoading(true);
+        const response = await axios.get('http://127.0.0.1:8080/api/client/home');
+        setHomeData(response.data);
+      } catch (error) {
+        console.error('Error fetching home data:', error);
+        // Fallback to existing data if API fails
+        setHomeData({
+          featured_products: products.slice(0, 8),
+          categories: ['Laptop', 'Phone', 'TV'],
+          recent_products: products.slice(0, 6)
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
 
-    return () => clearInterval(timer);
-    
-  }, []);
-  const featuredProducts = []
-products.map((product)=>{
-  featuredProducts.push(product)
-})
-  
-
-  const categories = [
-    'Laptop',
-    'Phone',
-    'TV'
-  ];
+    fetchHomeData();
+  }, [products]);
 
 
 
@@ -53,6 +51,11 @@ products.map((product)=>{
   const handleMyProducts = () => navigate("/Home_client/Productlist_client");
   const handleProfile = () => navigate("/Profile_client");
   const handleHomeClick = () => {navigate("/Home_client");};
+  const handleViewProduct = (productId) => {
+    // You can implement product detail navigation here
+    // For now, let's navigate to the product list and pass the product ID
+    navigate("/Home_client/Productlist_client", { state: { selectedProductId: productId } });
+  };
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
@@ -178,11 +181,15 @@ products.map((product)=>{
       <section className="categories" id="categories">
         <h2 className="section-title">Shop by Category</h2>
         <div className="category-list">
-          {categories.map((category, index) => (
-            <div key={index} className="category-item">
-              {category}
-            </div>
-          ))}
+          {loading ? (
+            <div className="text-center py-8">Loading categories...</div>
+          ) : (
+            homeData.categories.map((category, index) => (
+              <div key={category.id_category || index} className="category-item">
+                {category.category_name}
+              </div>
+            ))
+          )}
         </div>
       </section>
 
@@ -190,28 +197,65 @@ products.map((product)=>{
       <section className="products">
         <h2 className="section-title">Featured Products</h2>
         <div className="product-grid">
-          {featuredProducts.map((product) => (
-            <div key={product.id} className="product-card">
-              <img 
-                src={product.image} 
-                alt={product.name} 
-                onClick={() => handleViewProduct(product.id)}
-                style={{ cursor: 'pointer' }}
-              />
-              <h3 className="product-title">{product.name}</h3>
-              <p className="product-desc">{product.description}</p>
-              <div className="product-info">
-                <div className="product-price">${product.price}</div>
-                <div className="product-status">
-                  {product.available ? (
-                    <span className="available">✓ Available</span>
-                  ) : (
-                    <span className="unavailable">✗ Out of Stock</span>
-                  )}
+          {loading ? (
+            <div className="text-center py-8">Loading products...</div>
+          ) : (
+            homeData.featured_products.map((product) => (
+              <div key={product.id_product} className="product-card">
+                <img
+                  src={product.images && product.images.length > 0 ? `http://127.0.0.1:8080/uploads/${product.images[0].imageURL}` : '/placeholder-image.jpg'}
+                  alt={product.product_name}
+                  onClick={() => handleViewProduct(product.id_product)}
+                  style={{ cursor: 'pointer' }}
+                />
+                <h3 className="product-title">{product.product_name}</h3>
+                <p className="product-desc">{product.product_description}</p>
+                <div className="product-info">
+                  <div className="product-price">${product.price}</div>
+                  <div className="product-status">
+                    {product.stock > 0 ? (
+                      <span className="available">✓ Available</span>
+                    ) : (
+                      <span className="unavailable">✗ Out of Stock</span>
+                    )}
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            ))
+          )}
+        </div>
+      </section>
+
+      {/* Recent Products Section */}
+      <section className="products">
+        <h2 className="section-title">New Arrivals</h2>
+        <div className="product-grid">
+          {loading ? (
+            <div className="text-center py-8">Loading recent products...</div>
+          ) : (
+            homeData.recent_products.map((product) => (
+              <div key={product.id_product} className="product-card">
+                <img
+                  src={product.images && product.images.length > 0 ? `http://127.0.0.1:8080/uploads/${product.images[0].imageURL}` : '/placeholder-image.jpg'}
+                  alt={product.product_name}
+                  onClick={() => handleViewProduct(product.id_product)}
+                  style={{ cursor: 'pointer' }}
+                />
+                <h3 className="product-title">{product.product_name}</h3>
+                <p className="product-desc">{product.product_description}</p>
+                <div className="product-info">
+                  <div className="product-price">${product.price}</div>
+                  <div className="product-status">
+                    {product.stock > 0 ? (
+                      <span className="available">✓ Available</span>
+                    ) : (
+                      <span className="unavailable">✗ Out of Stock</span>
+                    )}
+                  </div>
+                </div>
+              </div>
+            ))
+          )}
         </div>
       </section>
 
@@ -258,8 +302,10 @@ products.map((product)=>{
           <div className="footer-section">
             <h3>Categories</h3>
             <ul>
-              {categories.map((category, index) => (
-                <li key={index}><a href={`#${category.toLowerCase()}`}>{category}</a></li>
+              {homeData.categories.map((category, index) => (
+                <li key={category.id_category || index}>
+                  <a href={`#${category.category_name?.toLowerCase()}`}>{category.category_name}</a>
+                </li>
               ))}
             </ul>
           </div>
