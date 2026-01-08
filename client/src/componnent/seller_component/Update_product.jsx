@@ -6,43 +6,64 @@ export default function update_product({selectedprod,fetchProducts}) {
   const navigate = useNavigate();
   const { id } = useParams();
   const [product, setProduct] = useState(selectedprod || null);
-  const [name, setName] = useState(selectedprod?.name || "");
-  const [description, setDescription] = useState(selectedprod?.description || "");
-  const [state, setState] = useState(selectedprod?.state || "");
+  const [name, setName] = useState(selectedprod?.product_name || selectedprod?.name || "");
+  const [description, setDescription] = useState(
+    selectedprod?.product_description || selectedprod?.description || ""
+  );
+  const [state, setState] = useState(selectedprod?.state || "new");
   const [date, setDate] = useState(new Date());
   const [price, setPrice] = useState(selectedprod?.price || 0);
   const [available, setAvailable] = useState(selectedprod?.available || false);
   const [brand, setBrand] = useState(selectedprod?.brand || "");
-  const [rate, setRate] = useState(selectedprod?.rate || 0);
-  const [quantity, setQuantity] = useState(selectedprod?.quantity || 0);
+  const [rate, setRate] = useState(selectedprod?.rating || selectedprod?.rate || 0);
+  const [quantity, setQuantity] = useState(selectedprod?.stock || selectedprod?.quantity || 0);
   const [negociable, setNegociable] = useState(selectedprod?.negociable || false);
   const [promo, setPromo] = useState(selectedprod?.promo || 0);
   const [delivered, setDelivered] = useState(selectedprod?.delivered || false);
   const [addToWishlist, setAddToWishlist] = useState(selectedprod?.addToWishlist || false);
 //   const [makeOffer, setMakeOffer] = useState(false);
- const [image, setimage] = useState(selectedprod?.image || "");
- const [category,setCategorie]=useState(selectedprod?.category || "");
+ const [image, setimage] = useState(
+  selectedprod?.images?.[0]?.imageURL || selectedprod?.image || ""
+ );
+ const [categories, setCategories] = useState([]);
+ const [categoryId, setCategoryId] = useState(selectedprod?.id_category || "");
 
  useEffect(() => {
    if (!id || (product && product.id_product)) return;
    const fetchProduct = async () => {
      try {
-       const res = await axios.get(`http://127.0.0.1:8080/api/product/${id}`);
-       const fetched = res.data;
-       setProduct(fetched);
-       setName(fetched.product_name || "");
-       setDescription(fetched.product_description || "");
-       setPrice(fetched.price || 0);
-       setBrand(fetched.brand || "");
-       setRate(fetched.rating || 0);
-       setQuantity(fetched.stock || 0);
-       setimage(fetched.images?.[0]?.imageURL || "");
-     } catch (error) {
-       console.error("Failed to load product:", error);
-     }
-   };
-   fetchProduct();
- }, [id, product]);
+        const res = await axios.get(`http://127.0.0.1:8080/api/product/${id}`);
+        const fetched = res.data;
+        setProduct(fetched);
+        setName(fetched.product_name || "");
+        setDescription(fetched.product_description || "");
+        if (fetched.state) {
+          setState(fetched.state);
+        }
+        setPrice(fetched.price || 0);
+        setBrand(fetched.brand || "");
+        setRate(fetched.rating || 0);
+        setQuantity(fetched.stock || 0);
+        setimage(fetched.images?.[0]?.imageURL || "");
+        setCategoryId(fetched.id_category || "");
+      } catch (error) {
+        console.error("Failed to load product:", error);
+      }
+    };
+    fetchProduct();
+  }, [id, product]);
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const res = await axios.get("http://127.0.0.1:8080/api/category");
+        setCategories(res.data || []);
+      } catch (error) {
+        console.error("Failed to load categories:", error);
+      }
+    };
+    fetchCategories();
+  }, []);
 
 
 
@@ -54,23 +75,26 @@ export default function update_product({selectedprod,fetchProducts}) {
   try {
     // Step 1: Create product
     const productId = product?.id_product || selectedprod?.id || id;
-    await axios.put(`http://127.0.0.1:8080/api/product/update/${productId}`, {
-      name,
-      description,
-      state,
-      date,
-      price,
-      available,
-      brand,
-      rate,
-      quantity,
-      negociable,
-      promo,
-      delivered,
-      addToWishlist,
-      image,
-      category
-    });
+    const token = localStorage.getItem("token");
+    await axios.put(
+      `http://127.0.0.1:8080/api/product/update/${productId}`,
+      {
+        product_name: name,
+        product_description: description,
+        price,
+        stock: quantity,
+        rating: rate,
+        brand,
+        id_category: categoryId ? parseInt(categoryId, 10) : undefined,
+        images: image ? [image] : [],
+      },
+      {
+        headers: {
+          Authorization: token ? `Bearer ${token}` : undefined,
+          "Content-Type": "application/json",
+        },
+      }
+    );
 
 
   } catch (error) {
@@ -165,17 +189,17 @@ export default function update_product({selectedprod,fetchProducts}) {
     Product Category
   </label>
   <select
-    value={category}
-    onChange={(e) => setCategorie(e.target.value)}
+    value={categoryId}
+    onChange={(e) => setCategoryId(e.target.value)}
     className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
     required
   >
     <option value="">Select a category</option>
-    <option value="Laptop">Laptop</option>
-    <option value="Phone">Phone</option>
-    <option value="TV">TV</option>
-    <option value="Accessories">Accessories</option>
-    <option value="Others">Others</option>
+    {categories.map((cat) => (
+      <option key={cat.id_category} value={cat.id_category}>
+        {cat.category_name}
+      </option>
+    ))}
   </select>
 </div>
                         <div>
