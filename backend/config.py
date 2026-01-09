@@ -14,12 +14,22 @@ class Config:
     MYSQL_PASSWORD = os.environ.get("MYSQL_PASSWORD") or "root"
     MYSQL_DATABASE = os.environ.get("MYSQL_DATABASE") or "ECommerce"
 
-    CORS_ORIGINS = [
-        "http://localhost:5173",
-        "http://127.0.0.1:5173",
-        "http://localhost:5174",
-        "http://127.0.0.1:5174",
-    ]
+    # CORS Origins - Support for local dev and Vercel deployment
+    # In production (Vercel), backend and frontend are on same domain via rewrites
+    # so CORS is less restrictive. Use "*" to allow all origins in production.
+    cors_origins_env = os.environ.get("CORS_ORIGINS")
+    if cors_origins_env == "*":
+        CORS_ORIGINS = "*"
+    elif cors_origins_env:
+        CORS_ORIGINS = [origin.strip() for origin in cors_origins_env.split(",") if origin.strip()]
+    else:
+        # Default: local development origins
+        CORS_ORIGINS = [
+            "http://localhost:5173",
+            "http://127.0.0.1:5173",
+            "http://localhost:5174",
+            "http://127.0.0.1:5174",
+        ]
 
     BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     UPLOAD_FOLDER = os.path.join(BASE_DIR, "server", "uploads")

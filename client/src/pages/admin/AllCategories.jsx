@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+﻿import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { Plus, Edit, Trash2, ChevronRight, Image as ImageIcon, FolderTree, Save, X } from "lucide-react";
@@ -6,6 +6,7 @@ import { motion } from 'framer-motion';
 import Modal from '../../components/common/Modal';
 import { useModal } from '../../hooks/useModal';
 import Navbar from '../../components/layout/Navbar';
+import { buildApiUrl, buildUploadUrl } from '../../utils/api';
 
 export default function AllCategories() {
   const navigate = useNavigate();
@@ -33,7 +34,7 @@ export default function AllCategories() {
   const fetchCategories = async () => {
     try {
       setLoading(true);
-      const res = await axios.get("http://127.0.0.1:8080/api/admin/categories");
+      const res = await axios.get(buildApiUrl("/admin/categories"));
       setCategories(res.data || []);
     } catch (err) {
       console.error("Error fetching categories:", err);
@@ -75,7 +76,7 @@ export default function AllCategories() {
     if (!validateForm()) return;
 
     try {
-      await axios.post("http://127.0.0.1:8080/api/admin/categories", formData);
+      await axios.post(buildApiUrl("/admin/categories"), formData);
       showSuccess("Catégorie ajoutée avec succès !", "Succès");
       setShowAddModal(false);
       setFormData({ category_name: "", category_description: "", image: "" });
@@ -104,7 +105,7 @@ export default function AllCategories() {
 
     try {
       await axios.put(
-        `http://127.0.0.1:8080/api/admin/categories/${editingCategory.id_category}`,
+        buildApiUrl("/admin/categories/${editingCategory.id_category}"),
         formData
       );
       showSuccess("Catégorie mise à jour avec succès !", "Succès");
@@ -125,7 +126,7 @@ export default function AllCategories() {
       "Supprimer la catégorie",
       async () => {
         try {
-          await axios.delete(`http://127.0.0.1:8080/api/admin/categories/${categoryId}`);
+          await axios.delete(buildApiUrl("/admin/categories/${categoryId}"));
           showSuccess("Catégorie supprimée avec succès !", "Succès");
           fetchCategories();
         } catch (err) {
@@ -148,7 +149,7 @@ export default function AllCategories() {
   const getImageUrl = (imageUrl) => {
     if (!imageUrl) return null;
     if (imageUrl.startsWith('http')) return imageUrl;
-    return `http://127.0.0.1:8080/uploads/${imageUrl}`;
+    return buildUploadUrl("${imageUrl}");
   };
 
   return (

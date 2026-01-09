@@ -4,6 +4,7 @@ import axios from 'axios';
 import { Mail, Lock, Loader2, Eye, EyeOff } from 'lucide-react';
 import Scene3DBackground from './components/Scene3DBackground';
 import Hero3DDevice from './components/Hero3DDevice';
+import { buildApiUrl } from './utils/api';
 
 const Login = () => {
   const navigate = useNavigate();
@@ -43,7 +44,7 @@ const Login = () => {
     setErrors({});
     
     try {
-      const response = await axios.post('http://127.0.0.1:8080/api/auth/login', {
+      const response = await axios.post(buildApiUrl('/auth/login'), {
         email,
         password,
       }, {

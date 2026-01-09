@@ -1,4 +1,4 @@
-import { useNavigate } from 'react-router-dom';
+﻿import { useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { 
@@ -9,6 +9,7 @@ import {
 import Navbar from '../../components/layout/Navbar';
 import Modal from '../../components/common/Modal';
 import { useModal } from '../../hooks/useModal';
+import { buildApiUrl, buildUploadUrl } from '../../utils/api';
 
 const SellerProfile = ({ handleSelectedSeller }) => {
   const navigate = useNavigate();
@@ -77,7 +78,7 @@ const SellerProfile = ({ handleSelectedSeller }) => {
       }
 
         axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-      const response = await axios.get('http://127.0.0.1:8080/api/seller/profile');
+      const response = await axios.get(buildApiUrl("/seller/profile"));
         const seller = response.data;
 
       const normalized = {
@@ -120,7 +121,7 @@ const SellerProfile = ({ handleSelectedSeller }) => {
       if (!token) return;
 
       axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-      const response = await axios.get('http://127.0.0.1:8080/api/seller/stats');
+      const response = await axios.get(buildApiUrl("/seller/stats"));
       const statsData = response.data;
 
       setStats(prev => ({
@@ -143,7 +144,7 @@ const SellerProfile = ({ handleSelectedSeller }) => {
       if (!token) return;
 
       axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-      const response = await axios.get('http://127.0.0.1:8080/api/seller/orders');
+      const response = await axios.get(buildApiUrl("/seller/orders"));
       setOrders(Array.isArray(response.data) ? response.data : []);
     } catch (err) {
       console.error('Error fetching orders:', err);
@@ -179,7 +180,7 @@ const SellerProfile = ({ handleSelectedSeller }) => {
         data.password = profileForm.password;
       }
 
-      await axios.put('http://127.0.0.1:8080/api/seller/profile', data);
+      await axios.put(buildApiUrl("/seller/profile"), data);
       showSuccess('Profil mis à jour avec succès !');
       setShowProfileModal(false);
       await fetchSellerData(); // Refresh seller data and recalculate completion

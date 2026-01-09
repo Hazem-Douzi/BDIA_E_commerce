@@ -1,6 +1,7 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import { buildApiUrl } from './utils/api';
 
 // Auth pages
 import Login from "./pages/auth/Login.jsx";
@@ -55,7 +56,7 @@ function App() {
 
   const fetchProducts = async () => {
     try {
-      const res = await axios.get("http://127.0.0.1:8080/api/product/All");
+      const res = await axios.get(buildApiUrl('/product/All'));
       setProducts(res.data);
     } catch (error) {
       console.log("Error:", error.message);

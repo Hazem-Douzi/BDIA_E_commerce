@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from "react";
+﻿import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { Package, ChevronRight, Upload, X, Plus, Image as ImageIcon } from 'lucide-react';
 import Modal from '../../components/common/Modal';
 import { useModal } from '../../hooks/useModal';
 import Navbar from '../../components/layout/Navbar';
+import { buildApiUrl, buildUploadUrl } from '../../utils/api';
 
 export default function Add_product({ fetchProducts }) {
   const navigate = useNavigate();
@@ -26,7 +27,7 @@ export default function Add_product({ fetchProducts }) {
     const fetchCategories = async () => {
       try {
         setLoadingCategories(true);
-        const res = await axios.get("http://127.0.0.1:8080/api/category");
+        const res = await axios.get(buildApiUrl("/category"));
         const categoriesData = Array.isArray(res.data) ? res.data : [];
         setCategories(categoriesData);
         if (categoriesData.length === 0) {
@@ -118,7 +119,7 @@ export default function Add_product({ fetchProducts }) {
       };
 
       await axios.post(
-        "http://127.0.0.1:8080/api/product/add",
+        buildApiUrl("/product/add"),
         productData,
         {
           headers: {
@@ -368,7 +369,7 @@ export default function Add_product({ fetchProducts }) {
                       {image && (
                         <div className="w-20 h-20 rounded-lg border-2 border-gray-200 overflow-hidden bg-white flex items-center justify-center flex-shrink-0">
                           <img
-                            src={image.startsWith('http') ? image : `http://127.0.0.1:8080/uploads/${image}`}
+                            src={image.startsWith('http') ? image : buildUploadUrl("${image}")}
                             alt={`Preview ${index + 1}`}
                             className="w-full h-full object-cover"
                             onError={(e) => {

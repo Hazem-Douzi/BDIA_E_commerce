@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from "axios";
 import { ChevronRight, ChevronLeft, LayoutGrid, List, Star, Eye, Package, Search, Filter as FilterIcon } from 'lucide-react';
@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import Navbar from '../../components/layout/Navbar';
 import Modal from '../../components/common/Modal';
 import { useModal } from '../../hooks/useModal';
+import { buildApiUrl, buildUploadUrl } from '../../utils/api';
 
 export default function ProductList({ handleselectedProd }) {
   const navigate = useNavigate();
@@ -71,14 +72,14 @@ export default function ProductList({ handleselectedProd }) {
     const fetchCategories = async () => {
       try {
         setLoadingCategories(true);
-        const res = await axios.get("http://127.0.0.1:8080/api/category");
+        const res = await axios.get(buildApiUrl("/category"));
         const categoriesData = Array.isArray(res.data) ? res.data : [];
         setCategories(categoriesData);
         
         // Récupérer les marques depuis les produits du seller uniquement
         if (sellerId) {
           try {
-            const brandsRes = await axios.get(`http://127.0.0.1:8080/api/product/search?seller_id=${sellerId}&limit=1000`);
+            const brandsRes = await axios.get(buildApiUrl("/product/search?seller_id=${sellerId}&limit=1000"));
             if (brandsRes.data && brandsRes.data.products) {
               const uniqueBrands = [...new Set(brandsRes.data.products.map(p => p.brand).filter(Boolean))];
               setBrands(uniqueBrands.sort());
@@ -189,7 +190,7 @@ export default function ProductList({ handleselectedProd }) {
       params.append('perPage', productsPerPage.toString());
       
       // Appel API avec tous les filtres - tout le filtrage est fait en SQL côté backend
-      const response = await axios.get(`http://127.0.0.1:8080/api/product/search?${params.toString()}`);
+      const response = await axios.get(buildApiUrl("/product/search?${params.toString()}"));
       
       if (response.data) {
         if (response.data.products) {
@@ -632,7 +633,7 @@ export default function ProductList({ handleselectedProd }) {
                       {/* Product Image */}
                       <div className={`relative ${viewMode === 'list' ? 'w-48 flex-shrink-0' : 'w-full h-48'}`}>
                         <img
-                          src={productImage.startsWith('http') ? productImage : `http://127.0.0.1:8080/uploads/${productImage}`}
+                          src={productImage.startsWith('http') ? productImage : buildUploadUrl("${productImage}")}
                           alt={productName}
                           className={`${viewMode === 'list' ? 'h-full' : 'h-full'} w-full object-cover`}
                           onError={(e) => {

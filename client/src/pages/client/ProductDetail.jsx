@@ -1,10 +1,11 @@
-import React, { useEffect, useState } from "react";
+﻿import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
 import { Star, ChevronRight, ShoppingCart, Heart, Package, MessageCircle } from 'lucide-react';
 import Navbar from '../../components/layout/Navbar';
 import Modal from '../../components/common/Modal';
 import { useModal } from '../../hooks/useModal';
+import { buildApiUrl, buildUploadUrl } from '../../utils/api';
 
 export default function ProductDetail({ selectedprod }) {
   const navigate = useNavigate();
@@ -39,7 +40,7 @@ export default function ProductDetail({ selectedprod }) {
 
       try {
         axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-        const response = await axios.get('http://127.0.0.1:8080/api/wishlist/');
+        const response = await axios.get(buildApiUrl("/wishlist/"));
         setWishlist(Array.isArray(response.data) ? response.data : []);
       } catch (error) {
         console.error('Failed to fetch wishlist:', error);
@@ -87,7 +88,7 @@ export default function ProductDetail({ selectedprod }) {
       
       setLoading(true);
       try {
-        const res = await axios.get(`http://127.0.0.1:8080/api/product/${id}`);
+        const res = await axios.get(buildApiUrl("/product/${id}"));
         const productData = res.data;
         setProduct(productData);
         
@@ -112,7 +113,7 @@ export default function ProductDetail({ selectedprod }) {
 
   const fetchSubcategory = async (subcategoryId) => {
     try {
-      const categoriesRes = await axios.get("http://127.0.0.1:8080/api/category");
+      const categoriesRes = await axios.get(buildApiUrl("/category"));
       const categories = Array.isArray(categoriesRes.data) ? categoriesRes.data : [];
       
       for (const cat of categories) {
@@ -132,7 +133,7 @@ export default function ProductDetail({ selectedprod }) {
   const fetchProductReviews = async (productId) => {
     try {
       setLoadingReviews(true);
-      const res = await axios.get(`http://127.0.0.1:8080/api/review/product/${productId}`);
+      const res = await axios.get(buildApiUrl("/review/product/${productId}"));
       const reviewsData = Array.isArray(res.data) ? res.data : [];
       setReviews(reviewsData);
       
@@ -185,14 +186,14 @@ export default function ProductDetail({ selectedprod }) {
 
       if (userReview) {
         // Update existing review
-        await axios.put(`http://127.0.0.1:8080/api/review/${userReview.id_review}`, {
+        await axios.put(buildApiUrl("/review/${userReview.id_review}"), {
           rating_review: reviewRating,
           commentt: reviewComment
         });
         showSuccess('Votre avis a été mis à jour');
       } else {
         // Create new review - use correct endpoint: /api/review/product/{product_id}
-        await axios.post(`http://127.0.0.1:8080/api/review/product/${productId}`, {
+        await axios.post(buildApiUrl("/review/product/${productId}"), {
           rating_review: reviewRating,
           commentt: reviewComment
         });
@@ -203,7 +204,7 @@ export default function ProductDetail({ selectedprod }) {
       await fetchProductReviews(productId);
       
       // Refresh product to get updated rating
-      const productRes = await axios.get(`http://127.0.0.1:8080/api/product/${productId}`);
+      const productRes = await axios.get(buildApiUrl("/product/${productId}"));
       setProduct(productRes.data);
       
       setShowReviewForm(false);
@@ -237,7 +238,7 @@ export default function ProductDetail({ selectedprod }) {
         axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
       }
 
-      await axios.delete(`http://127.0.0.1:8080/api/review/${userReview.id_review}`);
+      await axios.delete(buildApiUrl("/review/${userReview.id_review}"));
       showSuccess('Votre avis a été supprimé');
       
       setUserReview(null);
@@ -249,7 +250,7 @@ export default function ProductDetail({ selectedprod }) {
       await fetchProductReviews(productId);
       
       // Refresh product to get updated rating
-      const productRes = await axios.get(`http://127.0.0.1:8080/api/product/${productId}`);
+      const productRes = await axios.get(buildApiUrl("/product/${productId}"));
       setProduct(productRes.data);
     } catch (error) {
       console.error("Failed to delete review:", error);
@@ -270,7 +271,7 @@ export default function ProductDetail({ selectedprod }) {
 
     try {
       axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-      await axios.post('http://127.0.0.1:8080/api/cart/add', {
+      await axios.post(buildApiUrl("/cart/add"), {
         id_product: product.id_product || product.id,
         quantity: 1
       });
@@ -306,7 +307,7 @@ export default function ProductDetail({ selectedprod }) {
       
       if (isInWishlist) {
         // Remove from wishlist
-        await axios.delete(`http://127.0.0.1:8080/api/wishlist/${productId}`);
+        await axios.delete(buildApiUrl("/wishlist/${productId}"));
         // Update local state
         const updatedWishlist = wishlist.filter(item => {
           const itemId = item.id || item.id_product;
@@ -315,7 +316,7 @@ export default function ProductDetail({ selectedprod }) {
         setWishlist(updatedWishlist);
       } else {
         // Add to wishlist
-        await axios.post(`http://127.0.0.1:8080/api/wishlist/${productId}`);
+        await axios.post(buildApiUrl("/wishlist/${productId}"));
         // Update local state
         setWishlist([...wishlist, product]);
       }
@@ -384,7 +385,7 @@ export default function ProductDetail({ selectedprod }) {
   const getImageUrl = (imageUrl) => {
     if (!imageUrl) return 'https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=600&h=600&fit=crop';
     if (imageUrl.startsWith('http')) return imageUrl;
-    return `http://127.0.0.1:8080/uploads/${imageUrl}`;
+    return buildUploadUrl("${imageUrl}");
   };
   
   const mainImage = productImages.length > 0 

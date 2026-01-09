@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import axios from 'axios';
 import { CheckCircle, Package, Truck, Home, FileText, Loader2 } from 'lucide-react';
 import Navbar from '../../components/layout/Navbar';
+import { buildApiUrl, buildUploadUrl } from '../../utils/api';
 
 const CheckoutSuccessPage = () => {
   const navigate = useNavigate();
@@ -26,14 +27,14 @@ const CheckoutSuccessPage = () => {
 
       try {
         axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-        const response = await axios.get(`http://127.0.0.1:8080/api/order/${orderId}`);
+        const response = await axios.get(buildApiUrl("/order/${orderId}"));
         setOrder(response.data);
 
         // If we have a session_id from Stripe, verify the payment
         const sessionId = searchParams.get('session_id');
         if (sessionId) {
           try {
-            await axios.get(`http://127.0.0.1:8080/api/payment/stripe/verify/${sessionId}`);
+            await axios.get(buildApiUrl("/payment/stripe/verify/${sessionId}"));
             // Payment verification successful (webhook should have already updated it)
           } catch (error) {
             console.error('Failed to verify Stripe payment:', error);
@@ -97,7 +98,7 @@ const CheckoutSuccessPage = () => {
                                    'https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=300&h=300&fit=crop';
                 const imageUrl = productImage.startsWith('http') 
                   ? productImage 
-                  : `http://127.0.0.1:8080/uploads/${productImage}`;
+                  : buildUploadUrl("${productImage}");
 
                 return (
                   <div key={item.id_order_item} className="flex gap-4 border-b pb-4 last:border-0">

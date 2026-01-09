@@ -9,15 +9,19 @@ def create_app(config_class=Config):
     app.config.from_object(config_class)
     
     # Configure CORS to handle preflight requests properly
-    CORS(app, resources={
-        r"/api/*": {
-            "origins": app.config['CORS_ORIGINS'],
-            "methods": ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
-            "allow_headers": ["Content-Type", "Authorization", "X-Requested-With"],
-            "supports_credentials": True,
-            "expose_headers": ["Content-Type", "Authorization"]
-        }
-    })
+    # On Vercel, backend and frontend are on same domain, so CORS is less restrictive
+    cors_kwargs = {
+        "methods": ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+        "allow_headers": ["Content-Type", "Authorization", "X-Requested-With"],
+        "supports_credentials": True,
+        "expose_headers": ["Content-Type", "Authorization"]
+    }
+    
+    # If CORS_ORIGINS is "*", use origin="*" for all routes
+    if app.config.get('CORS_ORIGINS') == "*":
+        CORS(app, resources={r"/api/*": {"origin": "*", **cors_kwargs}})
+    else:
+        CORS(app, resources={r"/api/*": {"origins": app.config['CORS_ORIGINS'], **cors_kwargs}})
     
     # Configuration du dossier uploads
     import os

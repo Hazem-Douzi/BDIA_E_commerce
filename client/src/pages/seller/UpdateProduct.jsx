@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from "react";
+﻿import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
 import { Package, ChevronRight, Edit, X, Plus, Image as ImageIcon } from 'lucide-react';
 import Modal from '../../components/common/Modal';
 import { useModal } from '../../hooks/useModal';
 import Navbar from '../../components/layout/Navbar';
+import { buildApiUrl, buildUploadUrl } from '../../utils/api';
 
 export default function UpdateProduct({ selectedprod, fetchProducts }) {
   const navigate = useNavigate();
@@ -30,7 +31,7 @@ export default function UpdateProduct({ selectedprod, fetchProducts }) {
     const fetchCategories = async () => {
       try {
         setLoadingCategories(true);
-        const res = await axios.get("http://127.0.0.1:8080/api/category");
+        const res = await axios.get(buildApiUrl("/category"));
         const categoriesData = Array.isArray(res.data) ? res.data : [];
         setCategories(categoriesData);
         if (categoriesData.length === 0) {
@@ -66,7 +67,7 @@ export default function UpdateProduct({ selectedprod, fetchProducts }) {
 
       try {
         setLoadingProduct(true);
-        const res = await axios.get(`http://127.0.0.1:8080/api/product/${id}`);
+        const res = await axios.get(buildApiUrl("/product/${id}"));
         const fetched = res.data;
         setProduct(fetched);
         populateForm(fetched);
@@ -195,7 +196,7 @@ export default function UpdateProduct({ selectedprod, fetchProducts }) {
       };
 
       await axios.put(
-        `http://127.0.0.1:8080/api/product/update/${productId}`,
+        buildApiUrl("/product/update/${productId}"),
         updateData,
         {
           headers: {
@@ -225,7 +226,7 @@ export default function UpdateProduct({ selectedprod, fetchProducts }) {
   const getImageUrl = (imageUrl) => {
     if (!imageUrl) return '';
     if (imageUrl.startsWith('http')) return imageUrl;
-    return `http://127.0.0.1:8080/uploads/${imageUrl}`;
+    return buildUploadUrl("${imageUrl}");
   };
 
   if (loadingProduct) {

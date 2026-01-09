@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { buildApiUrl, buildUploadUrl } from '../../utils/api';
 import {
   Search,
   User,
@@ -59,7 +60,7 @@ const Navbar = () => {
     }
 
     try {
-      const response = await axios.get('http://127.0.0.1:8080/api/cart/', {
+      const response = await axios.get(buildApiUrl("/cart/"), {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -107,7 +108,7 @@ const Navbar = () => {
     }
 
     try {
-      const response = await axios.get('http://127.0.0.1:8080/api/wishlist/', {
+      const response = await axios.get(buildApiUrl("/wishlist/"), {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -160,7 +161,7 @@ const Navbar = () => {
     const fetchCategories = async () => {
       try {
         setLoadingCategories(true);
-        const res = await axios.get("http://127.0.0.1:8080/api/category");
+        const res = await axios.get(buildApiUrl("/category"));
         const categoriesData = Array.isArray(res.data) ? res.data : [];
         setCategories(categoriesData);
       } catch (error) {
@@ -290,7 +291,7 @@ const Navbar = () => {
                 className="text-2xl font-bold text-indigo-600 cursor-pointer flex items-center gap-2"
               >
                 <ShoppingBag className="w-8 h-8" />
-                <span>ShopEase Admin</span>
+                <span>TekShop Admin</span>
               </div>
 
               {/* Admin Navigation Links */}
@@ -369,7 +370,7 @@ const Navbar = () => {
                 className="text-2xl font-bold text-indigo-600 cursor-pointer flex items-center gap-2"
               >
                 <ShoppingBag className="w-8 h-8" />
-                <span>ShopEase Seller</span>
+                <span>TekShop Seller</span>
               </div>
 
               {/* Seller Navigation Links */}
@@ -441,7 +442,7 @@ const Navbar = () => {
               className="text-2xl font-bold text-indigo-600 cursor-pointer flex items-center gap-2"
             >
               <ShoppingBag className="w-8 h-8" />
-              <span>ShopEase</span>
+              <span>TekShop</span>
             </div>
 
             {/* All Categories Dropdown & Search Bar - Only show for clients */}
@@ -615,7 +616,7 @@ const Navbar = () => {
                               const productImage = item.images?.[0]?.imageURL || item.image || 'https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=300&h=300&fit=crop';
                               const imageUrl = productImage.startsWith('http') 
                                 ? productImage 
-                                : `http://127.0.0.1:8080/uploads/${productImage}`;
+                                : buildUploadUrl(productImage);
                               const productName = item.product_name || item.name || 'Produit';
                               const price = item.price || 0;
                               
