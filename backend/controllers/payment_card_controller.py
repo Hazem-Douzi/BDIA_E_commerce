@@ -7,10 +7,14 @@ def get_client_payment_cards(client_id):
     """Get all payment cards for a client."""
     try:
         cards = payment_cards_dao.list_payment_cards_by_client(client_id)
-        result = [payment_card_to_dict(card) for card in cards]
+        result = [payment_card_to_dict(card) for card in cards] if cards else []
         return jsonify(result), 200
     except Exception as error:
-        return jsonify({"message": str(error)}), 500
+        import traceback
+        from flask import current_app
+        current_app.logger.error(f"Error in get_client_payment_cards: {error}\n{traceback.format_exc()}")
+        # Return empty array instead of error to prevent frontend crashes
+        return jsonify([]), 200
 
 
 def create_payment_card(client_id, data):

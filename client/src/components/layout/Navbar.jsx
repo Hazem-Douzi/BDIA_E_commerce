@@ -12,7 +12,12 @@ import {
   Truck,
   ChevronDown,
   LogIn,
-  Grid3x3
+  Grid3x3,
+  Package,
+  ShoppingBag as OrdersIcon,
+  Home as HomeIcon,
+  PlusCircle,
+  LogOut
 } from 'lucide-react';
 
 const Navbar = () => {
@@ -25,14 +30,30 @@ const Navbar = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [categories, setCategories] = useState([]);
   const [loadingCategories, setLoadingCategories] = useState(true);
+  const [userRole, setUserRole] = useState(null);
+  const [userData, setUserData] = useState(null);
 
 
-  // Function to fetch cart from backend API
+  // Function to fetch cart from backend API (only for clients)
   const fetchCart = async () => {
     const token = localStorage.getItem('token');
     if (!token || !isLoggedIn) {
       setCart([]);
       return;
+    }
+
+    // Only fetch cart for clients, not sellers
+    try {
+      const storedUser = localStorage.getItem('user');
+      if (storedUser) {
+        const parsedUser = JSON.parse(storedUser);
+        if (parsedUser.role !== 'client') {
+          setCart([]);
+          return;
+        }
+      }
+    } catch (e) {
+      // If we can't parse user, skip cart fetch
     }
 
     try {
@@ -53,7 +74,7 @@ const Navbar = () => {
         setCart([]);
       }
     } catch (error) {
-      // Only log error if it's not a 401/403 (user not logged in)
+      // Only log error if it's not a 401/403 (user not logged in or not client)
       if (error.response?.status !== 401 && error.response?.status !== 403) {
         console.error('Failed to fetch cart:', error);
       }
@@ -61,12 +82,26 @@ const Navbar = () => {
     }
   };
 
-  // Function to fetch wishlist from backend API
+  // Function to fetch wishlist from backend API (only for clients)
   const fetchWishlist = async () => {
     const token = localStorage.getItem('token');
     if (!token) {
       setWishlist([]);
       return;
+    }
+
+    // Only fetch wishlist for clients, not sellers
+    try {
+      const storedUser = localStorage.getItem('user');
+      if (storedUser) {
+        const parsedUser = JSON.parse(storedUser);
+        if (parsedUser.role !== 'client') {
+          setWishlist([]);
+          return;
+        }
+      }
+    } catch (e) {
+      // If we can't parse user, skip wishlist fetch
     }
 
     try {
@@ -77,7 +112,7 @@ const Navbar = () => {
       });
       setWishlist(Array.isArray(response.data) ? response.data : []);
     } catch (error) {
-      // Only log error if it's not a 401/403 (user not logged in)
+      // Only log error if it's not a 401/403 (user not logged in or not client)
       if (error.response?.status !== 401 && error.response?.status !== 403) {
         console.error('Failed to fetch wishlist:', error);
       }
@@ -91,16 +126,32 @@ const Navbar = () => {
     const loggedIn = !!token;
     setIsLoggedIn(loggedIn);
     
-    // Fetch cart from backend if logged in
-    if (token && loggedIn) {
+    // Get user role and data
+    let currentUserRole = null;
+    try {
+      const storedUser = localStorage.getItem('user');
+      if (storedUser) {
+        const parsedUser = JSON.parse(storedUser);
+        setUserData(parsedUser);
+        currentUserRole = parsedUser.role || null;
+        setUserRole(currentUserRole);
+      }
+    } catch (e) {
+      console.error('Error parsing user data:', e);
+    }
+    
+    // Fetch cart from backend only for clients
+    if (token && loggedIn && currentUserRole === 'client') {
       fetchCart();
     } else {
       setCart([]);
     }
 
-    // Fetch wishlist from backend if logged in
-    if (token) {
+    // Fetch wishlist from backend only for clients
+    if (token && currentUserRole === 'client') {
       fetchWishlist();
+    } else {
+      setWishlist([]);
     }
 
     // Fetch categories from database
@@ -119,15 +170,15 @@ const Navbar = () => {
     };
     fetchCategories();
 
-    // Listen for custom events (same-tab updates) - for wishlist and cart from backend
+    // Listen for custom events (same-tab updates) - for wishlist and cart from backend (only for clients)
     const handleWishlistUpdate = () => {
-      if (token) {
+      if (token && currentUserRole === 'client') {
         fetchWishlist();
       }
     };
 
     const handleCartUpdate = () => {
-      if (token) {
+      if (token && currentUserRole === 'client') {
         fetchCart();
       }
     };
@@ -135,9 +186,9 @@ const Navbar = () => {
     window.addEventListener('wishlistUpdated', handleWishlistUpdate);
     window.addEventListener('cartUpdated', handleCartUpdate);
 
-    // Poll for cart and wishlist changes periodically (refresh from backend)
+    // Poll for cart and wishlist changes periodically (only for clients)
     let interval;
-    if (token) {
+    if (token && userRole === 'client') {
       interval = setInterval(() => {
         fetchCart();
         fetchWishlist();
@@ -174,8 +225,28 @@ const Navbar = () => {
     navigate(`/Home_client/Productlist_client?search=${searchQuery}`);
   };
 
-  const handleHomeClick = () => navigate("/");
-  const handleProfile = () => navigate("/Profile_client");
+  const handleHomeClick = () => {
+    if (userRole === 'seller') {
+      navigate("/Home_seller");
+    } else {
+      navigate("/");
+    }
+  };
+  
+  const handleProfile = () => {
+    if (userRole === 'seller') {
+      navigate("/Home_seller/profile");
+    } else {
+      navigate("/Profile_client");
+    }
+  };
+  
+  const handleOrders = () => {
+    if (userRole === 'seller') {
+      navigate("/Home_seller/orders");
+    }
+  };
+  
   const handleSignIn = () => navigate("/login");
   const handleSupport = () => {
     // Navigate to support page or open support modal
@@ -204,6 +275,79 @@ const Navbar = () => {
     navigate('/Home_client/Productlist_client');
   };
 
+  // Seller-specific navigation links
+  if (userRole === 'seller') {
+    return (
+      <header className="bg-white shadow-md sticky top-0 z-50">
+        <div className="bg-white border-b border-gray-200">
+          <div className="max-w-7xl mx-auto px-4 py-4">
+            <div className="flex items-center justify-between gap-4">
+              {/* Logo */}
+              <div 
+                onClick={handleHomeClick}
+                className="text-2xl font-bold text-indigo-600 cursor-pointer flex items-center gap-2"
+              >
+                <ShoppingBag className="w-8 h-8" />
+                <span>ShopEase Seller</span>
+              </div>
+
+              {/* Seller Navigation Links */}
+              <nav className="flex-1 flex items-center justify-center gap-6">
+                <button
+                  onClick={handleHomeClick}
+                  className="flex items-center gap-2 text-gray-700 hover:text-indigo-600 font-medium transition-colors"
+                >
+                  <HomeIcon className="w-4 h-4" />
+                  <span className="hidden md:inline">Accueil</span>
+                </button>
+                <button
+                  onClick={() => navigate("/Home_seller/my_products")}
+                  className="flex items-center gap-2 text-gray-700 hover:text-indigo-600 font-medium transition-colors"
+                >
+                  <Package className="w-4 h-4" />
+                  <span className="hidden md:inline">Mes Produits</span>
+                </button>
+                <button
+                  onClick={handleOrders}
+                  className="flex items-center gap-2 text-gray-700 hover:text-indigo-600 font-medium transition-colors"
+                >
+                  <OrdersIcon className="w-4 h-4" />
+                  <span className="hidden md:inline">Commandes</span>
+                </button>
+                <button
+                  onClick={() => navigate("/Home_seller/add_product")}
+                  className="flex items-center gap-2 text-gray-700 hover:text-indigo-600 font-medium transition-colors"
+                >
+                  <PlusCircle className="w-4 h-4" />
+                  <span className="hidden md:inline">Ajouter Produit</span>
+                </button>
+              </nav>
+
+              {/* Right Icons */}
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={handleProfile}
+                  className="relative p-2 text-gray-700 hover:text-indigo-600 transition-colors"
+                  title="Profil"
+                >
+                  <User className="w-6 h-6" />
+                </button>
+                <button
+                  onClick={handleLogout}
+                  className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition-colors font-medium"
+                >
+                  <span className="hidden sm:inline">Déconnexion</span>
+                  <LogOut className="w-5 h-5 sm:hidden" />
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </header>
+    );
+  }
+
+  // Client navigation (existing code)
   return (
     <header className="bg-white shadow-md sticky top-0 z-50">
       {/* Main Navigation */}
@@ -219,7 +363,8 @@ const Navbar = () => {
               <span>ShopEase</span>
             </div>
 
-            {/* All Categories Dropdown & Search Bar */}
+            {/* All Categories Dropdown & Search Bar - Only show for clients */}
+            {userRole !== 'seller' && (
             <div className="flex-1 flex items-center gap-3 max-w-3xl mx-4">
               {/* All Categories Dropdown */}
               <div className="relative categories-dropdown-container">
@@ -292,6 +437,7 @@ const Navbar = () => {
                 </div>
               </form>
             </div>
+            )}
 
             {/* Right Icons */}
             <div className="flex items-center gap-3">
@@ -315,8 +461,19 @@ const Navbar = () => {
                 </button>
               )}
               
-              {/* Wishlist - Only show when logged in */}
-              {isLoggedIn && (
+               {/* Orders - Show for both sellers and clients */}
+               {isLoggedIn && (userRole === 'seller' || userRole === 'client') && (
+                 <button
+                   onClick={userRole === 'seller' ? handleOrders : () => navigate('/Profile_client')}
+                   className="relative p-2 text-gray-700 hover:text-indigo-600 transition-colors"
+                   title="Mes Commandes"
+                 >
+                   <OrdersIcon className="w-6 h-6" />
+                 </button>
+               )}
+              
+              {/* Wishlist - Only show for clients when logged in */}
+              {isLoggedIn && userRole === 'client' && (
                 <button
                   onClick={() => navigate('/wishlist')}
                   className="relative p-2 text-gray-700 hover:text-indigo-600 transition-colors"
@@ -331,8 +488,8 @@ const Navbar = () => {
                 </button>
               )}
 
-              {/* Cart with Dropdown - Show total and count */}
-              {(isLoggedIn || cart.length > 0) && (
+              {/* Cart with Dropdown - Only show for clients */}
+              {userRole === 'client' && (isLoggedIn || cart.length > 0) && (
               <div className="relative cart-dropdown-container">
                 <button
                   onClick={() => {

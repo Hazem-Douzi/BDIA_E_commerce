@@ -25,6 +25,7 @@ import AddProduct from "./pages/seller/AddProduct.jsx";
 import UpdateProduct from "./pages/seller/UpdateProduct.jsx";
 import SellerProfile from "./pages/seller/Profile.jsx";
 import UpdateSeller from "./pages/seller/UpdateProfile.jsx";
+import SellerOrders from "./pages/seller/Orders.jsx";
 
 // Admin pages
 import AdminDashboard from "./pages/admin/Dashboard.jsx";
@@ -88,7 +89,8 @@ function App() {
           <Route path="/Home_seller/my_products" element={<SellerProductList handleselectedProd={handleselectedProd} />} />
           <Route path="/Home_seller/Productdetlai/:id" element={<SellerProductDetail selectedprod={selectedprod} fetchProducts={fetchProducts} />} />
           <Route path="/Home_seller/Update_product/:id" element={<UpdateProduct selectedprod={selectedprod} fetchProducts={fetchProducts} />} />
-          <Route path="/Home_seller/profile/UpdateSeller" element={<UpdateSeller selectedSeller={selectedSeller} />} />          
+          <Route path="/Home_seller/profile/UpdateSeller" element={<UpdateSeller selectedSeller={selectedSeller} />} />
+          <Route path="/Home_seller/orders" element={<SellerOrders />} />          
           
           {/* Admin Routes */}
           <Route path="/Home_admin" element={<AdminDashboard />} />

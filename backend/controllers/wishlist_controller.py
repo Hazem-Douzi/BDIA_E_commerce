@@ -91,11 +91,14 @@ def get_wishlist_count(client_id):
     """Get the count of products in client's wishlist."""
     try:
         if not client_id:
-            return jsonify({"message": "Client ID is required", "count": 0}), 400
+            return jsonify({"count": 0}), 200
         
         wishlist_items = wishlist_dao.get_wishlist_by_client(client_id)
         count = len(wishlist_items) if wishlist_items else 0
         return jsonify({"count": count}), 200
     except Exception as error:
         import traceback
-        return jsonify({"message": str(error), "count": 0, "traceback": traceback.format_exc()}), 500
+        from flask import current_app
+        current_app.logger.error(f"Error in get_wishlist_count: {error}\n{traceback.format_exc()}")
+        # Return 0 count instead of error to prevent frontend crashes
+        return jsonify({"count": 0, "error": "Could not fetch wishlist count"}), 200

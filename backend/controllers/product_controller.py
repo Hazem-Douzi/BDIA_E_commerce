@@ -294,7 +294,17 @@ def search_products(query_params):
             elif stock.lower() == "out" or stock.lower() == "false" or stock.lower() == "unavailable":
                 conditions.append("stock = 0")
 
-        # 7. Filtre par note minimale (rating)
+        # 7. Filtre par vendeur (seller_id)
+        seller_id = query_params.get("seller_id") or query_params.get("sellerId")
+        if seller_id:
+            try:
+                seller_id_int = int(seller_id)
+                conditions.append("id_seller = %s")
+                params.append(seller_id_int)
+            except (ValueError, TypeError):
+                pass  # Ignore invalid seller_id
+
+        # 8. Filtre par note minimale (rating)
         min_rating = query_params.get("minRating") or query_params.get("rating")
         if min_rating:
             conditions.append("rating >= %s")

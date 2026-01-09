@@ -25,6 +25,7 @@ export default function ProductDetail({ selectedprod }) {
   const [reviewComment, setReviewComment] = useState('');
   const [userReview, setUserReview] = useState(null); // Existing review by current user
   const [hoveredStar, setHoveredStar] = useState(0);
+  const [selectedImageIndex, setSelectedImageIndex] = useState(0);
 
   // Load wishlist from backend (cart is now loaded in Navbar)
   useEffect(() => {
@@ -374,7 +375,22 @@ export default function ProductDetail({ selectedprod }) {
   const productPrice = parseFloat(product.price) || 0;
   const productStock = parseInt(product.stock) || 0;
   const isAvailable = productStock > 0;
-  const productImage = product.images?.[0]?.imageURL || product.image || product.imageURL || 'https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=600&h=600&fit=crop';
+  
+  // Get all images
+  const productImages = product?.images && product.images.length > 0 
+    ? product.images.map(img => img.imageURL || img)
+    : product?.image ? [product.image] : [];
+  
+  const getImageUrl = (imageUrl) => {
+    if (!imageUrl) return 'https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=600&h=600&fit=crop';
+    if (imageUrl.startsWith('http')) return imageUrl;
+    return `http://127.0.0.1:8080/uploads/${imageUrl}`;
+  };
+  
+  const mainImage = productImages.length > 0 
+    ? getImageUrl(productImages[selectedImageIndex])
+    : getImageUrl(null);
+  
   const productDescription = product.description || product.product_description || 'Aucune description disponible';
   const categoryName = product.category?.category_name || product.category_name || 'Catégorie non spécifiée';
   const subcategoryName = subcategory?.SubCategory_name || product.subcategory?.SubCategory_name || null;
@@ -424,21 +440,53 @@ export default function ProductDetail({ selectedprod }) {
         {/* Product Detail */}
         <div className="bg-white rounded-2xl shadow-lg overflow-hidden mb-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 p-8">
-            {/* Product Image */}
-            <div className="relative">
-              <div className="aspect-square rounded-xl overflow-hidden bg-gray-100">
+            {/* Product Images */}
+            <div>
+              {/* Main Image */}
+              <div className="relative w-full h-[500px] rounded-xl overflow-hidden bg-gray-100 mb-4">
                 <img
-                  src={productImage}
+                  src={mainImage}
                   alt={productName}
                   className="w-full h-full object-cover"
                   onError={(e) => {
                     e.target.src = 'https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=600&h=600&fit=crop';
                   }}
                 />
+                {!isAvailable && (
+                  <div className="absolute top-4 right-4 bg-red-500 text-white px-4 py-2 rounded-full font-semibold shadow-lg">
+                    ÉPUISÉ
+                  </div>
+                )}
+                {isAvailable && (
+                  <div className="absolute top-4 right-4 bg-green-500 text-white px-4 py-2 rounded-full font-semibold shadow-lg">
+                    DISPONIBLE
+                  </div>
+                )}
               </div>
-              {!isAvailable && (
-                <div className="absolute top-4 left-4 bg-red-500 text-white px-4 py-2 rounded-lg font-semibold">
-                  Épuisé
+
+              {/* Thumbnail Images */}
+              {productImages.length > 1 && (
+                <div className="flex gap-2 overflow-x-auto pb-2">
+                  {productImages.map((img, index) => (
+                    <button
+                      key={index}
+                      onClick={() => setSelectedImageIndex(index)}
+                      className={`flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden border-2 transition-all ${
+                        selectedImageIndex === index 
+                          ? 'border-indigo-600 ring-2 ring-indigo-200' 
+                          : 'border-gray-200 hover:border-indigo-400'
+                      }`}
+                    >
+                      <img
+                        src={getImageUrl(img)}
+                        alt={`Vue ${index + 1}`}
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          e.target.src = 'https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=100&h=100&fit=crop';
+                        }}
+                      />
+                    </button>
+                  ))}
                 </div>
               )}
             </div>
