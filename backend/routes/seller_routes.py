@@ -38,6 +38,18 @@ def get_seller_orders():
     seller_id = user.get('id') or user.get('id_user')
     return seller_controller.get_seller_orders(seller_id)
 
+@bp.route('/orders/<int:order_id>/status', methods=['PUT'])
+@verify_token
+def update_seller_order_status(order_id):
+    """Met à jour le statut d'une commande du vendeur"""
+    user = request.user
+    if user.get('role') != 'seller':
+        from flask import jsonify
+        return jsonify({'message': 'Unauthorized: Only sellers can update order status'}), 403
+    data = request.get_json() or {}
+    seller_id = user.get('id') or user.get('id_user')
+    return seller_controller.update_seller_order_status(seller_id, order_id, data)
+
 @bp.route('/stats', methods=['GET'])
 @verify_token
 def get_seller_stats():

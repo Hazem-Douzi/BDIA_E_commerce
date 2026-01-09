@@ -89,6 +89,12 @@ const ClientProfile = ({ handleSelectedClient }) => {
       const response = await axios.get('http://127.0.0.1:8080/api/client/profile');
       const client = response.data;
 
+      // Use total_spent from backend if available (calculated from delivered orders)
+      if (client.stats && client.stats.total_spent !== undefined) {
+        console.log('Backend total_spent:', client.stats.total_spent);
+        setStats(prev => ({ ...prev, totalSpent: parseFloat(client.stats.total_spent) || 0 }));
+      }
+
       const normalized = {
         id: client.id_user,
         fullName: client.full_name || '',
@@ -128,12 +134,24 @@ const ClientProfile = ({ handleSelectedClient }) => {
       const response = await axios.get('http://127.0.0.1:8080/api/order/');
       setOrders(Array.isArray(response.data) ? response.data : []);
       
-      // Calculate total spent
+      // Calculate total spent - only delivered orders (livré suffisant, pas besoin de vérifier payment_status)
       const total = response.data.reduce((sum, order) => {
-        return sum + (parseFloat(order.total_amount) || 0);
+        if (order.order_status === 'delivered') {
+          return sum + (parseFloat(order.total_amount) || 0);
+        }
+        return sum;
       }, 0);
       
-      setStats(prev => ({ ...prev, totalOrders: response.data.length, totalSpent: total }));
+      console.log('Orders fetched:', response.data);
+      console.log('Calculated total spent from orders:', total);
+      console.log('Orders filtered (delivered):', response.data.filter(o => o.order_status === 'delivered'));
+      
+      // Update total spent only if orders were successfully fetched
+      setStats(prev => {
+        const newStats = { ...prev, totalOrders: response.data.length, totalSpent: total };
+        console.log('Updating stats with totalSpent:', newStats.totalSpent);
+        return newStats;
+      });
     } catch (err) {
       console.error('Error fetching orders:', err);
     }
@@ -382,7 +400,11 @@ const ClientProfile = ({ handleSelectedClient }) => {
           </div>
           <div className="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition-shadow">
             <div className="text-3xl font-bold text-green-600 mb-1">
-              {stats.totalSpent.toFixed(2)} DH
+              {(() => {
+                const total = stats.totalSpent || 0;
+                console.log('Displaying total spent:', total, 'from stats:', stats);
+                return `${total.toFixed(2)} DH`;
+              })()}
             </div>
             <div className="text-sm text-gray-600 flex items-center gap-2">
               <DollarSign className="w-4 h-4" />

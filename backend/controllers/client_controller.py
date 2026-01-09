@@ -14,9 +14,21 @@ def get_client_profile(client_id):
 
         client_dict = user_to_dict(client)
         orders = orders_dao.list_orders_by_client(client_id)
-        total_spent = sum(
-            order["total_amount"] for order in orders if order["payment_status"] == "paid"
+        # Only count delivered orders (livré suffisant, pas besoin de vérifier payment_status)
+        delivered_orders = [
+            order for order in orders 
+            if order["order_status"] == "delivered"
+        ]
+        total_spent = sum(order["total_amount"] for order in delivered_orders)
+        
+        # Log for debugging (can be removed in production)
+        from flask import current_app
+        current_app.logger.info(
+            f"Client {client_id} - Total orders: {len(orders)}, "
+            f"Delivered: {len(delivered_orders)}, "
+            f"Total spent: {total_spent}"
         )
+        
         client_dict["stats"] = {
             "total_orders": len(orders),
             "total_spent": float(total_spent) if total_spent is not None else 0,
