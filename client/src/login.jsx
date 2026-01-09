@@ -17,15 +17,15 @@ const Login = () => {
     const newErrors = {};
 
     if (!email) {
-      newErrors.email = 'Email is required';
+      newErrors.email = 'L\'email est requis';
     } else if (!/\S+@\S+\.\S+/.test(email)) {
-      newErrors.email = 'Email is invalid';
+      newErrors.email = 'L\'email est invalide';
     }
 
     if (!password) {
-      newErrors.password = 'Password is required';
+      newErrors.password = 'Le mot de passe est requis';
     } else if (password.length < 6) {
-      newErrors.password = 'Password must be at least 6 characters';
+      newErrors.password = 'Le mot de passe doit contenir au moins 6 caractères';
     }
 
     setErrors(newErrors);
@@ -76,11 +76,11 @@ const Login = () => {
       console.error('Login error:', error);
       const status = error?.response?.status;
       const data = error?.response?.data;
-      let message = typeof data === 'string' ? data : data?.message || 'Login failed';
+      let message = typeof data === 'string' ? data : data?.message || 'Échec de la connexion';
       if (status === 401) {
-        message = 'Email or password is incorrect';
+        message = 'Email ou mot de passe incorrect';
       } else if (status === 404) {
-        message = 'Account does not exist';
+        message = 'Le compte n\'existe pas';
       }
       setErrors({ general: message });
       setIsLoading(false);
@@ -131,8 +131,8 @@ const Login = () => {
             <div className="relative z-10">
           {/* Header */}
           <div className="text-center mb-6">
-            <h1 className="text-3xl md:text-4xl font-bold text-white mb-2">Welcome Back</h1>
-            <p className="text-gray-300 text-xs md:text-sm">Sign in to your account to continue shopping</p>
+            <h1 className="text-3xl md:text-4xl font-bold text-white mb-2">Bon retour</h1>
+            <p className="text-gray-300 text-xs md:text-sm">Connectez-vous à votre compte pour continuer vos achats</p>
           </div>
 
           {/* Form */}
@@ -147,7 +147,7 @@ const Login = () => {
             {/* Email Input */}
             <div>
               <label htmlFor="email" className="block text-white text-sm font-medium mb-2">
-                Email Address
+                Adresse e-mail
               </label>
               <div className="relative">
                 <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
@@ -160,7 +160,7 @@ const Login = () => {
                   className={`w-full pl-10 pr-4 py-3 bg-slate-900/50 border ${
                     errors.email ? 'border-red-500' : 'border-white/20'
                   } rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all`}
-                  placeholder="Enter your email"
+                  placeholder="Entrez votre email"
                   required
                 />
               </div>
@@ -172,7 +172,7 @@ const Login = () => {
             {/* Password Input */}
             <div>
               <label htmlFor="password" className="block text-white text-sm font-medium mb-2">
-                Password
+                Mot de passe
               </label>
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5 z-10" />
@@ -185,14 +185,14 @@ const Login = () => {
                   className={`w-full pl-10 pr-12 py-3 bg-slate-900/50 border ${
                     errors.password ? 'border-red-500' : 'border-white/20'
                   } rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all`}
-                  placeholder="Enter your password"
+                  placeholder="Entrez votre mot de passe"
                   required
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-300 transition-colors focus:outline-none"
-                  aria-label={showPassword ? "Hide password" : "Show password"}
+                  aria-label={showPassword ? "Masquer le mot de passe" : "Afficher le mot de passe"}
                 >
                   {showPassword ? (
                     <EyeOff className="w-5 h-5" />
@@ -213,13 +213,13 @@ const Login = () => {
                   type="checkbox" 
                   className="w-4 h-4 rounded border-white/20 bg-slate-900/50 text-purple-600 focus:ring-purple-500 focus:ring-offset-0"
                 />
-                <span className="ml-2">Remember me</span>
+                <span className="ml-2">Se souvenir de moi</span>
               </label>
               <Link 
                 to="#" 
                 className="text-purple-400 hover:text-purple-300 text-sm font-medium transition-colors"
               >
-                Forgot Password?
+                Mot de passe oublié ?
               </Link>
             </div>
 
@@ -232,10 +232,10 @@ const Login = () => {
               {isLoading ? (
                 <>
                   <Loader2 className="w-5 h-5 animate-spin" />
-                  Signing in...
+                  Connexion en cours...
                 </>
               ) : (
-                'Sign In'
+                'Se connecter'
               )}
             </button>
           </form>
@@ -246,7 +246,7 @@ const Login = () => {
               <div className="w-full border-t border-white/20"></div>
             </div>
             <div className="relative flex justify-center text-sm">
-              <span className="px-4 bg-transparent text-gray-400">or</span>
+                  <span className="px-4 bg-transparent text-gray-400">ou</span>
             </div>
           </div>
 
@@ -262,7 +262,7 @@ const Login = () => {
                 <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
                 <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
               </svg>
-              Continue with Google
+              Continuer avec Google
             </button>
             
             <button 
@@ -272,19 +272,19 @@ const Login = () => {
               <svg className="w-5 h-5" viewBox="0 0 24 24">
                 <path fill="#1877F2" d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
               </svg>
-              Continue with Facebook
+              Continuer avec Facebook
             </button>
           </div>
 
           {/* Sign Up Link */}
           <div className="mt-6 text-center">
             <p className="text-gray-300 text-sm">
-              Don't have an account?{' '}
+              Vous n'avez pas de compte ?{' '}
               <Link 
                 to="/register" 
                 className="text-purple-400 hover:text-purple-300 font-semibold transition-colors"
               >
-                Sign up
+                S'inscrire
               </Link>
             </p>
           </div>

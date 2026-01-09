@@ -98,7 +98,7 @@ const Modal = ({
           <button
             onClick={onClose}
             className="text-gray-400 hover:text-gray-600 transition-colors"
-            aria-label="Close modal"
+            aria-label="Fermer la fenêtre"
           >
             <X className="w-5 h-5" />
           </button>

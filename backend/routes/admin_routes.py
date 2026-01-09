@@ -109,3 +109,8 @@ def update_order_status(order_id):
 def get_dashboard_stats():
     return admin_controller.get_dashboard_stats()
 
+# ============ REVIEWS ============
+@bp.route('/reviews/<int:review_id>', methods=['DELETE'])
+@admin_only
+def delete_review(review_id):
+    return admin_controller.delete_review(review_id)
