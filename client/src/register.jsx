@@ -19,25 +19,25 @@ const Register = () => {
     const newErrors = {};
 
     if (!fullName.trim()) {
-      newErrors.fullName = 'Full name is required';
+      newErrors.fullName = 'Le nom complet est requis';
     } else if (fullName.trim().length < 2) {
-      newErrors.fullName = 'Full name must be at least 2 characters';
+      newErrors.fullName = 'Le nom complet doit contenir au moins 2 caractères';
     }
 
     if (!email) {
-      newErrors.email = 'Email is required';
+      newErrors.email = 'L\'email est requis';
     } else if (!/\S+@\S+\.\S+/.test(email)) {
-      newErrors.email = 'Email is invalid';
+      newErrors.email = 'L\'email est invalide';
     }
 
     if (!password) {
-      newErrors.password = 'Password is required';
+      newErrors.password = 'Le mot de passe est requis';
     } else if (password.length < 8) {
-      newErrors.password = 'Password must be at least 8 characters';
+      newErrors.password = 'Le mot de passe doit contenir au moins 8 caractères';
     }
 
     if (!role || role === "") {
-      newErrors.role = 'Please select a role';
+      newErrors.role = 'Veuillez sélectionner un rôle';
     }
 
     setErrors(newErrors);
@@ -71,7 +71,7 @@ const Register = () => {
       
     } catch (error) {
       setErrors({ 
-        general: error.response?.data?.message || 'Registration failed. Please try again.' 
+        general: error.response?.data?.message || 'L\'inscription a échoué. Veuillez réessayer.' 
       });
     } finally {
       setIsLoading(false);
@@ -122,8 +122,8 @@ const Register = () => {
             <div className="relative z-10">
               {/* Header */}
               <div className="text-center mb-6">
-                <h1 className="text-3xl md:text-4xl font-bold text-white mb-2">Create Account</h1>
-                <p className="text-gray-300 text-xs md:text-sm">Join us and start your shopping journey</p>
+                <h1 className="text-3xl md:text-4xl font-bold text-white mb-2">Créer un compte</h1>
+                <p className="text-gray-300 text-xs md:text-sm">Rejoignez-nous et commencez votre expérience d'achat</p>
               </div>
 
               {/* Form */}
@@ -138,7 +138,7 @@ const Register = () => {
                 {/* Full Name Input */}
                 <div>
                   <label htmlFor="fullName" className="block text-white text-sm font-medium mb-2">
-                    Full Name
+                    Nom complet
                   </label>
                   <div className="relative">
                     <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5 z-10" />
@@ -151,7 +151,7 @@ const Register = () => {
                       className={`w-full pl-10 pr-4 py-3 bg-slate-900/50 border ${
                         errors.fullName ? 'border-red-500' : 'border-white/20'
                       } rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all`}
-                      placeholder="Enter your full name"
+                      placeholder="Entrez votre nom complet"
                       required
                     />
                   </div>
@@ -163,7 +163,7 @@ const Register = () => {
                 {/* Email Input */}
                 <div>
                   <label htmlFor="email" className="block text-white text-sm font-medium mb-2">
-                    Email Address
+                    Adresse e-mail
                   </label>
                   <div className="relative">
                     <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5 z-10" />
@@ -176,7 +176,7 @@ const Register = () => {
                       className={`w-full pl-10 pr-4 py-3 bg-slate-900/50 border ${
                         errors.email ? 'border-red-500' : 'border-white/20'
                       } rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all`}
-                      placeholder="Enter your email"
+                      placeholder="Entrez votre email"
                       required
                     />
                   </div>
@@ -188,7 +188,7 @@ const Register = () => {
                 {/* Password Input */}
                 <div>
                   <label htmlFor="password" className="block text-white text-sm font-medium mb-2">
-                    Password
+                    Mot de passe
                   </label>
                   <div className="relative">
                     <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5 z-10" />
@@ -201,14 +201,14 @@ const Register = () => {
                       className={`w-full pl-10 pr-12 py-3 bg-slate-900/50 border ${
                         errors.password ? 'border-red-500' : 'border-white/20'
                       } rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all`}
-                      placeholder="Create a password"
+                      placeholder="Créez un mot de passe"
                       required
                     />
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
                       className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-300 transition-colors focus:outline-none"
-                      aria-label={showPassword ? "Hide password" : "Show password"}
+                      aria-label={showPassword ? "Masquer le mot de passe" : "Afficher le mot de passe"}
                     >
                       {showPassword ? (
                         <EyeOff className="w-5 h-5" />
@@ -225,7 +225,7 @@ const Register = () => {
                 {/* Role Select */}
                 <div>
                   <label htmlFor="role" className="block text-white text-sm font-medium mb-2">
-                    Role
+                    Rôle
                   </label>
                   <div className="relative">
                     <select
@@ -238,9 +238,9 @@ const Register = () => {
                       } rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all appearance-none cursor-pointer`}
                       required
                     >
-                      <option value="" className="bg-slate-900 text-gray-400">Select Role</option>
+                      <option value="" className="bg-slate-900 text-gray-400">Sélectionner un rôle</option>
                       <option value="client" className="bg-slate-900 text-white">Client</option>
-                      <option value="seller" className="bg-slate-900 text-white">Seller</option>
+                      <option value="seller" className="bg-slate-900 text-white">Vendeur</option>
                     </select>
                     <div className="absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none">
                       <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -262,10 +262,10 @@ const Register = () => {
                   {isLoading ? (
                     <>
                       <Loader2 className="w-5 h-5 animate-spin" />
-                      Creating Account...
+                      Création du compte...
                     </>
                   ) : (
-                    'Create Account'
+                    'Créer un compte'
                   )}
                 </button>
               </form>
@@ -276,7 +276,7 @@ const Register = () => {
                   <div className="w-full border-t border-white/20"></div>
                 </div>
                 <div className="relative flex justify-center text-sm">
-                  <span className="px-4 bg-transparent text-gray-400">or</span>
+                  <span className="px-4 bg-transparent text-gray-400">ou</span>
                 </div>
               </div>
 
@@ -292,7 +292,7 @@ const Register = () => {
                     <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
                     <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
                   </svg>
-                  Sign up with Google
+                  S'inscrire avec Google
                 </button>
                 
                 <button 
@@ -302,19 +302,19 @@ const Register = () => {
                   <svg className="w-5 h-5" viewBox="0 0 24 24">
                     <path fill="#1877F2" d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
                   </svg>
-                  Sign up with Facebook
+                  S'inscrire avec Facebook
                 </button>
               </div>
 
               {/* Sign In Link */}
               <div className="mt-6 text-center">
                 <p className="text-gray-300 text-sm">
-                  Already have an account?{' '}
+                  Vous avez déjà un compte ?{' '}
                   <Link 
                     to="/login" 
                     className="text-purple-400 hover:text-purple-300 font-semibold transition-colors"
                   >
-                    Sign in
+                    Se connecter
                   </Link>
                 </p>
               </div>

@@ -1,12 +1,16 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import { Store, Trash2, CheckCircle, XCircle, ChevronRight, User } from 'lucide-react';
+import { motion } from 'framer-motion';
 import Modal from '../../components/common/Modal';
 import { useModal } from '../../hooks/useModal';
+import Navbar from '../../components/layout/Navbar';
 
 export default function SellerList() {
-  const { modal, showSuccess, showError, closeModal } = useModal();
+  const { modal, showSuccess, showError, showConfirm, closeModal } = useModal();
   const [sellers, setSellers] = useState([]);
+  const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -19,45 +23,32 @@ export default function SellerList() {
 
   const fetchSellers = async () => {
     try {
+      setLoading(true);
       const res = await axios.get("http://127.0.0.1:8080/api/admin/users/sellers");
-      setSellers(res.data);
+      setSellers(res.data || []);
     } catch (err) {
       console.error("Error fetching sellers:", err);
-      showError("Error fetching sellers. Please check your authentication.", "Erreur de chargement");
+      showError("Erreur lors du chargement des vendeurs. Veuillez vérifier votre authentification.", "Erreur de chargement");
+    } finally {
+      setLoading(false);
     }
-  };
-
-  // Admin button Navigation
-  const handle_home_click = () => {
-    navigate("/Home_admin");
-  };
-  const handle_All_Client_Click = () => {
-    navigate("/Home_admin/All_client");
-  };
-  const handle_All_Seller_Click = () => {
-    navigate("/Home_admin/All_seller");
-  };
-  const handle_All_products_Click = () => {
-    navigate("/Home_admin/All_prod");
-  };
-  const handleLogoutClick = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
-    delete axios.defaults.headers.common["Authorization"];
-    navigate("/");
   };
 
   const handleDeleteSeller = async (sellerId) => {
-    if (confirm("Are you sure you want to delete this seller?")) {
-      try {
-        await axios.delete(`http://127.0.0.1:8080/api/admin/users/${sellerId}`);
-        showSuccess("Seller deleted successfully", "Vendeur supprimé");
-        fetchSellers();
-      } catch (error) {
-        console.error("Delete error:", error);
-        showError("Error deleting seller: " + (error.response?.data?.message || error.message));
+    showConfirm(
+      "Êtes-vous sûr de vouloir supprimer ce vendeur ? Cette action est irréversible.",
+      "Supprimer le vendeur",
+      async () => {
+        try {
+          await axios.delete(`http://127.0.0.1:8080/api/admin/users/${sellerId}`);
+          showSuccess("Vendeur supprimé avec succès", "Succès");
+          fetchSellers();
+        } catch (error) {
+          console.error("Delete error:", error);
+          showError("Erreur lors de la suppression: " + (error.response?.data?.message || error.message));
+        }
       }
-    }
+    );
   };
 
   const handleVerifySeller = async (sellerId, status) => {
@@ -65,118 +56,160 @@ export default function SellerList() {
       await axios.put(`http://127.0.0.1:8080/api/admin/sellers/${sellerId}/verification`, {
         verification_status: status
       });
-      showSuccess(`Seller verification status updated to ${status}`, "Statut mis à jour");
+      showSuccess(`Statut de vérification mis à jour: ${status === 'verified' ? 'Vérifié' : 'Rejeté'}`, "Succès");
       fetchSellers();
     } catch (error) {
       console.error("Verification error:", error);
-      showError("Error updating verification status: " + (error.response?.data?.message || error.message));
+      showError("Erreur lors de la mise à jour: " + (error.response?.data?.message || error.message));
+    }
+  };
+
+  const getVerificationStatus = (status) => {
+    switch (status) {
+      case 'verified':
+        return { label: 'Vérifié', class: 'bg-green-100 text-green-800', icon: CheckCircle };
+      case 'rejected':
+        return { label: 'Rejeté', class: 'bg-red-100 text-red-800', icon: XCircle };
+      default:
+        return { label: 'En attente', class: 'bg-yellow-100 text-yellow-800', icon: null };
     }
   };
 
   return (
-    <div>
-      <header className="header">
-        <div className="logo">ShopEase</div>
-        <nav>
-          <ul>
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100">
+      <Navbar />
+      
+      <div className="max-w-7xl mx-auto px-4 py-8">
+        {/* Breadcrumb */}
+        <nav className="mb-6 text-sm">
+          <ol className="flex items-center gap-2 text-gray-600">
             <li>
-              <a onClick={handle_home_click}>Home</a>
+              <button onClick={() => navigate('/Home_admin')} className="hover:text-indigo-600 transition-colors">
+                Accueil
+              </button>
             </li>
-            <li>
-              <a onClick={handle_All_Client_Click}>All Client</a>
-            </li>
-            <li>
-              <a onClick={handle_All_Seller_Click}>All Seller</a>
-            </li>
-            <li>
-              <a onClick={handle_All_products_Click}>All products</a>
-            </li>
-            <button onClick={handleLogoutClick} className="login-btn">
-              Logout
-            </button>
-          </ul>
+            <li><ChevronRight className="w-4 h-4" /></li>
+            <li className="text-gray-900 font-medium">Tous les Vendeurs</li>
+          </ol>
         </nav>
-      </header>
 
-      <div className="min-h-screen bg-gray-100 p-6">
-        <h1 className="text-3xl font-bold text-center text-gray-800 mb-6">
-          All Sellers
-        </h1>
-
-        <div className="overflow-x-auto">
-          <table className="min-w-full bg-white shadow-md rounded-2xl overflow-hidden">
-            <thead className="bg-indigo-600 text-white">
-              <tr>
-                <th className="text-left py-3 px-6">ID</th>
-                <th className="text-left py-3 px-6">Full Name</th>
-                <th className="text-left py-3 px-6">Email</th>
-                <th className="text-left py-3 px-6">Phone</th>
-                <th className="text-left py-3 px-6">Shop Name</th>
-                <th className="text-left py-3 px-6">Verification</th>
-                <th className="text-left py-3 px-6">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {sellers.map((seller, index) => (
-                <tr key={index} className="border-b hover:bg-gray-50">
-                  <td className="py-3 px-6 font-semibold text-gray-700">
-                    {seller.id_user}
-                  </td>
-                  <td className="py-3 px-6 font-semibold text-gray-700">
-                    {seller.full_name}
-                  </td>
-                  <td className="py-3 px-6 text-gray-600">{seller.email}</td>
-                  <td className="py-3 px-6 text-gray-600">
-                    {seller.phone || "N/A"}
-                  </td>
-                  <td className="py-3 px-6 text-gray-600">
-                    {seller.seller_profile?.shop_name || "N/A"}
-                  </td>
-                  <td className="py-3 px-6">
-                    <span className={`px-2 py-1 rounded text-xs font-semibold ${
-                      seller.seller_profile?.verification_status === 'verified' ? 'bg-green-100 text-green-800' :
-                      seller.seller_profile?.verification_status === 'rejected' ? 'bg-red-100 text-red-800' :
-                      'bg-yellow-100 text-yellow-800'
-                    }`}>
-                      {seller.seller_profile?.verification_status || 'pending'}
-                    </span>
-                  </td>
-                  <td className="py-3 px-6 flex gap-2">
-                    {seller.seller_profile?.verification_status !== 'verified' && (
-                      <button
-                        onClick={() => handleVerifySeller(seller.id_user, 'verified')}
-                        className="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded-md text-xs"
-                      >
-                        Verify
-                      </button>
-                    )}
-                    {seller.seller_profile?.verification_status !== 'rejected' && (
-                      <button
-                        onClick={() => handleVerifySeller(seller.id_user, 'rejected')}
-                        className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded-md text-xs"
-                      >
-                        Reject
-                      </button>
-                    )}
-                    <button
-                      onClick={() => handleDeleteSeller(seller.id_user)}
-                      className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded-md text-xs"
-                    >
-                      Delete
-                    </button>
-                  </td>
-                </tr>
-              ))}
-              {sellers.length === 0 && (
-                <tr>
-                  <td colSpan="7" className="text-center py-6 text-gray-500">
-                    No sellers found.
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
+        {/* Header */}
+        <div className="bg-gradient-to-r from-purple-600 to-pink-600 rounded-2xl shadow-xl p-8 mb-8 text-white">
+          <div className="flex items-center gap-4">
+            <div className="p-3 bg-white/20 rounded-lg">
+              <Store className="w-8 h-8" />
+            </div>
+            <div>
+              <h1 className="text-3xl font-bold mb-2">Tous les Vendeurs</h1>
+              <p className="text-purple-100">Gérez les vendeurs et leurs vérifications</p>
+            </div>
+          </div>
         </div>
+
+        {/* Sellers Table */}
+        {loading ? (
+          <div className="bg-white rounded-xl shadow-lg p-12 text-center">
+            <div className="inline-block animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-600"></div>
+            <p className="mt-4 text-gray-600">Chargement des vendeurs...</p>
+          </div>
+        ) : (
+          <div className="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-100">
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gradient-to-r from-purple-600 to-pink-600">
+                  <tr>
+                    <th className="px-6 py-4 text-left text-xs font-semibold text-white uppercase tracking-wider">ID</th>
+                    <th className="px-6 py-4 text-left text-xs font-semibold text-white uppercase tracking-wider">Nom Complet</th>
+                    <th className="px-6 py-4 text-left text-xs font-semibold text-white uppercase tracking-wider">Email</th>
+                    <th className="px-6 py-4 text-left text-xs font-semibold text-white uppercase tracking-wider">Téléphone</th>
+                    <th className="px-6 py-4 text-left text-xs font-semibold text-white uppercase tracking-wider">Boutique</th>
+                    <th className="px-6 py-4 text-left text-xs font-semibold text-white uppercase tracking-wider">Vérification</th>
+                    <th className="px-6 py-4 text-left text-xs font-semibold text-white uppercase tracking-wider">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {sellers.length === 0 ? (
+                    <tr>
+                      <td colSpan="7" className="px-6 py-12 text-center">
+                        <Store className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+                        <p className="text-gray-500 text-lg">Aucun vendeur trouvé</p>
+                      </td>
+                    </tr>
+                  ) : (
+                    sellers.map((seller, index) => {
+                      const statusInfo = getVerificationStatus(seller.seller_profile?.verification_status);
+                      const StatusIcon = statusInfo.icon;
+                      
+                      return (
+                        <motion.tr
+                          key={seller.id_user || index}
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: index * 0.05 }}
+                          className="hover:bg-purple-50 transition-colors"
+                        >
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="flex items-center">
+                              <User className="w-5 h-5 text-gray-400 mr-2" />
+                              <span className="text-sm font-semibold text-gray-900">{seller.id_user}</span>
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="text-sm font-semibold text-gray-900">{seller.full_name}</div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="text-sm text-gray-600">{seller.email}</div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="text-sm text-gray-600">{seller.phone || "N/A"}</div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="text-sm text-gray-600">{seller.seller_profile?.shop_name || "N/A"}</div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold ${statusInfo.class}`}>
+                              {StatusIcon && <StatusIcon className="w-3 h-3" />}
+                              {statusInfo.label}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                            <div className="flex gap-2">
+                              {seller.seller_profile?.verification_status !== 'verified' && (
+                                <button
+                                  onClick={() => handleVerifySeller(seller.id_user, 'verified')}
+                                  className="px-3 py-1.5 bg-green-500 hover:bg-green-600 text-white rounded-lg transition-colors flex items-center gap-1"
+                                  title="Vérifier"
+                                >
+                                  <CheckCircle className="w-4 h-4" />
+                                </button>
+                              )}
+                              {seller.seller_profile?.verification_status !== 'rejected' && (
+                                <button
+                                  onClick={() => handleVerifySeller(seller.id_user, 'rejected')}
+                                  className="px-3 py-1.5 bg-orange-500 hover:bg-orange-600 text-white rounded-lg transition-colors flex items-center gap-1"
+                                  title="Rejeter"
+                                >
+                                  <XCircle className="w-4 h-4" />
+                                </button>
+                              )}
+                              <button
+                                onClick={() => handleDeleteSeller(seller.id_user)}
+                                className="px-3 py-1.5 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors flex items-center gap-1"
+                                title="Supprimer"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                            </div>
+                          </td>
+                        </motion.tr>
+                      );
+                    })
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Modal */}

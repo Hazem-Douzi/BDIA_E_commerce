@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import axios from "axios";
-import { Heart, ChevronRight, ChevronLeft, LayoutGrid, List, Star, ShoppingCart } from 'lucide-react';
+import { Heart, ChevronRight, ChevronLeft, LayoutGrid, List, Star, ShoppingCart, Search, Filter as FilterIcon } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import Navbar from '../../components/layout/Navbar';
 import Modal from '../../components/common/Modal';
 import { useModal } from '../../hooks/useModal';
@@ -405,23 +406,53 @@ export default function ProductList({ handleselectedProd }) {
   }, [location.search]);
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100">
       <Navbar />
       
-      <div className="max-w-7xl mx-auto px-4 py-6">
+      <div className="max-w-7xl mx-auto px-4 py-8">
         {/* Breadcrumb */}
-        <nav className="mb-4 text-sm">
+        <motion.nav
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-6 text-sm"
+        >
           <ol className="flex items-center gap-2 text-gray-600">
-            <li><button onClick={() => navigate('/')} className="hover:text-indigo-600">Accueil</button></li>
+            <li><button onClick={() => navigate('/')} className="hover:text-indigo-600 transition-colors">Accueil</button></li>
             <li><ChevronRight className="w-4 h-4" /></li>
             <li className="text-gray-900 font-medium">Tous les Produits</li>
           </ol>
-        </nav>
+        </motion.nav>
+
+        {/* Search Bar */}
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-white rounded-xl shadow-lg p-4 mb-6 border border-gray-100"
+        >
+          <div className="relative">
+            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Rechercher par nom, marque ou description..."
+              className="w-full pl-12 pr-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all"
+            />
+          </div>
+        </motion.div>
 
         <div className="flex gap-6">
           {/* Left Sidebar - Filters */}
-          <aside className="w-64 flex-shrink-0 bg-white rounded-lg shadow-sm p-4 h-fit sticky top-24">
-            <h3 className="text-lg font-semibold text-gray-800 mb-4">Filtrer</h3>
+          <motion.aside
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.1 }}
+            className="w-64 flex-shrink-0 bg-white rounded-xl shadow-lg p-6 h-fit sticky top-24 border border-gray-100"
+          >
+            <div className="flex items-center gap-2 mb-6">
+              <FilterIcon className="w-5 h-5 text-indigo-600" />
+              <h3 className="text-lg font-semibold text-gray-800">Filtrer</h3>
+            </div>
             
             {/* Price Filter */}
             <div className="mb-6">
@@ -596,7 +627,7 @@ export default function ProductList({ handleselectedProd }) {
                 )}
               </div>
             </div>
-          </aside>
+          </motion.aside>
 
           {/* Main Content */}
           <main className="flex-1">
@@ -664,7 +695,7 @@ export default function ProductList({ handleselectedProd }) {
               <div className="mt-2 text-xs text-gray-500">
                 Affichage {(currentPage - 1) * productsPerPage + 1}-{Math.min(currentPage * productsPerPage, pagination.total || displayedProducts.length)} De {pagination.total || displayedProducts.length} Article{(pagination.total || displayedProducts.length) > 1 ? 's' : ''}
               </div>
-                    </div>
+            </div>
 
             {/* Products Grid/List */}
             {displayedProducts.length > 0 ? (
@@ -679,9 +710,13 @@ export default function ProductList({ handleselectedProd }) {
                   const isAvailable = product.available !== false && (product.stock || 0) > 0;
 
                   return (
-                    <div
+                    <motion.div
                       key={productId}
-                      className={`bg-white rounded-lg shadow-sm overflow-hidden hover:shadow-md transition-shadow ${viewMode === 'list' ? 'flex gap-4' : ''}`}
+                      initial={{ opacity: 0, scale: 0.9 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      whileHover={{ y: -5, scale: 1.02 }}
+                      transition={{ duration: 0.2 }}
+                      className={`bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-2xl transition-all border border-gray-100 ${viewMode === 'list' ? 'flex gap-4' : ''}`}
                     >
                       {/* Product Image */}
                       <div className={`relative ${viewMode === 'list' ? 'w-48 flex-shrink-0' : 'w-full h-48'}`}>
@@ -735,9 +770,9 @@ export default function ProductList({ handleselectedProd }) {
                     <button 
                       onClick={() => handleAddToCart(product)}
                             disabled={!isAvailable}
-                            className={`flex-1 flex items-center justify-center gap-2 py-2 px-4 rounded-lg font-semibold transition-colors ${
+                            className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-4 rounded-lg font-semibold transition-all transform hover:scale-105 ${
                               isAvailable
-                                ? 'bg-indigo-600 hover:bg-indigo-700 text-white'
+                                ? 'bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white shadow-md hover:shadow-lg'
                                 : 'bg-gray-300 text-gray-500 cursor-not-allowed'
                             }`}
                           >
@@ -755,7 +790,7 @@ export default function ProductList({ handleselectedProd }) {
                     </button>
                   </div>
                 </div>
-              </div>
+              </motion.div>
                   );
                 })}
           </div>

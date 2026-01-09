@@ -17,7 +17,9 @@ import {
   ShoppingBag as OrdersIcon,
   Home as HomeIcon,
   PlusCircle,
-  LogOut
+  LogOut,
+  Store,
+  FolderTree
 } from 'lucide-react';
 
 const Navbar = () => {
@@ -274,6 +276,85 @@ const Navbar = () => {
   const handleAllProductsClick = () => {
     navigate('/Home_client/Productlist_client');
   };
+
+  // Admin-specific navigation links
+  if (userRole === 'admin') {
+    return (
+      <header className="bg-white shadow-md sticky top-0 z-50">
+        <div className="bg-white border-b border-gray-200">
+          <div className="max-w-7xl mx-auto px-4 py-4">
+            <div className="flex items-center justify-between gap-4">
+              {/* Logo */}
+              <div 
+                onClick={() => navigate("/Home_admin")}
+                className="text-2xl font-bold text-indigo-600 cursor-pointer flex items-center gap-2"
+              >
+                <ShoppingBag className="w-8 h-8" />
+                <span>ShopEase Admin</span>
+              </div>
+
+              {/* Admin Navigation Links */}
+              <nav className="flex-1 flex items-center justify-center gap-6">
+                <button
+                  onClick={() => navigate("/Home_admin")}
+                  className="flex items-center gap-2 text-gray-700 hover:text-indigo-600 font-medium transition-colors"
+                >
+                  <HomeIcon className="w-4 h-4" />
+                  <span className="hidden md:inline">Accueil</span>
+                </button>
+                <button
+                  onClick={() => navigate("/Home_admin/All_client")}
+                  className="flex items-center gap-2 text-gray-700 hover:text-indigo-600 font-medium transition-colors"
+                >
+                  <User className="w-4 h-4" />
+                  <span className="hidden md:inline">Clients</span>
+                </button>
+                <button
+                  onClick={() => navigate("/Home_admin/All_seller")}
+                  className="flex items-center gap-2 text-gray-700 hover:text-indigo-600 font-medium transition-colors"
+                >
+                  <Store className="w-4 h-4" />
+                  <span className="hidden md:inline">Vendeurs</span>
+                </button>
+                <button
+                  onClick={() => navigate("/Home_admin/All_prod")}
+                  className="flex items-center gap-2 text-gray-700 hover:text-indigo-600 font-medium transition-colors"
+                >
+                  <Package className="w-4 h-4" />
+                  <span className="hidden md:inline">Produits</span>
+                </button>
+                <button
+                  onClick={() => navigate("/Home_admin/All_categories")}
+                  className="flex items-center gap-2 text-gray-700 hover:text-indigo-600 font-medium transition-colors"
+                >
+                  <Grid3x3 className="w-4 h-4" />
+                  <span className="hidden md:inline">Catégories</span>
+                </button>
+                <button
+                  onClick={() => navigate("/Home_admin/All_subcategories")}
+                  className="flex items-center gap-2 text-gray-700 hover:text-indigo-600 font-medium transition-colors"
+                >
+                  <FolderTree className="w-4 h-4" />
+                  <span className="hidden md:inline">Sous-catégories</span>
+                </button>
+              </nav>
+
+              {/* Right Icons */}
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={handleLogout}
+                  className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition-colors font-medium"
+                >
+                  <span className="hidden sm:inline">Déconnexion</span>
+                  <LogOut className="w-5 h-5 sm:hidden" />
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </header>
+    );
+  }
 
   // Seller-specific navigation links
   if (userRole === 'seller') {

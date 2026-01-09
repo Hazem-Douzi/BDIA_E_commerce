@@ -8,6 +8,7 @@ from backend.database.dao import products as products_dao
 from backend.database.dao import product_images as images_dao
 from backend.database.dao import orders as orders_dao
 from backend.database.dao import payments as payments_dao
+from backend.database.dao import reviews as reviews_dao
 from backend.controllers.serializers import (
     user_to_dict,
     category_to_dict,
@@ -346,5 +347,27 @@ def get_dashboard_stats():
             "pending_seller_verifications": seller_profiles_dao.count_pending_verifications(),
         }
         return jsonify(stats), 200
+    except Exception as error:
+        return jsonify({"message": str(error)}), 500
+
+
+def delete_review(review_id):
+    """Delete a review (admin only)."""
+    try:
+        review = reviews_dao.get_review(review_id)
+        if not review:
+            return jsonify({"message": "Review not found"}), 404
+
+        product_id = review["id_product"]
+        reviews_dao.delete_review(review_id)
+
+        # Update product rating
+        avg_rating = reviews_dao.average_rating_for_product(product_id)
+        if avg_rating is None:
+            products_dao.update_product_rating(product_id, 0.0)
+        else:
+            products_dao.update_product_rating(product_id, avg_rating)
+
+        return jsonify({"message": "Review deleted successfully"}), 200
     except Exception as error:
         return jsonify({"message": str(error)}), 500

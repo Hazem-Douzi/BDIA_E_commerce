@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from "axios";
-import { ChevronRight, ChevronLeft, LayoutGrid, List, Star, Eye, Package } from 'lucide-react';
+import { ChevronRight, ChevronLeft, LayoutGrid, List, Star, Eye, Package, Search, Filter as FilterIcon } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import Navbar from '../../components/layout/Navbar';
 import Modal from '../../components/common/Modal';
 import { useModal } from '../../hooks/useModal';
@@ -341,20 +342,35 @@ export default function ProductList({ handleselectedProd }) {
         </div>
 
         {/* Search Bar */}
-        <div className="bg-white rounded-xl shadow-md p-4 mb-6">
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Rechercher par nom, marque ou description..."
-            className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-          />
-        </div>
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-white rounded-xl shadow-lg p-4 mb-6 border border-gray-100"
+        >
+          <div className="relative">
+            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Rechercher par nom, marque ou description..."
+              className="w-full pl-12 pr-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all"
+            />
+          </div>
+        </motion.div>
 
         <div className="flex gap-6">
           {/* Left Sidebar - Filters */}
-          <aside className="w-64 flex-shrink-0 bg-white rounded-xl shadow-md p-4 h-fit sticky top-24">
-            <h3 className="text-lg font-semibold text-gray-800 mb-4">Filtrer</h3>
+          <motion.aside
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.1 }}
+            className="w-64 flex-shrink-0 bg-white rounded-xl shadow-lg p-6 h-fit sticky top-24 border border-gray-100"
+          >
+            <div className="flex items-center gap-2 mb-6">
+              <FilterIcon className="w-5 h-5 text-indigo-600" />
+              <h3 className="text-lg font-semibold text-gray-800">Filtrer</h3>
+            </div>
             
             {/* Price Filter */}
             <div className="mb-6">
@@ -510,12 +526,16 @@ export default function ProductList({ handleselectedProd }) {
                 )}
               </div>
             </div>
-          </aside>
+          </motion.aside>
 
           {/* Main Content */}
           <main className="flex-1">
             {/* Top Bar - Count, Sort, View Mode */}
-            <div className="bg-white rounded-xl shadow-md p-4 mb-4">
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="bg-white rounded-xl shadow-lg p-4 mb-4 border border-gray-100"
+            >
               <div className="flex flex-wrap items-center justify-between gap-4">
                 <div className="text-sm text-gray-600">
                   Il y a <span className="font-semibold text-gray-900">{pagination.total || products.length}</span> {(pagination.total || products.length) === 1 ? 'produit' : 'produits'}.
@@ -582,7 +602,7 @@ export default function ProductList({ handleselectedProd }) {
               <div className="mt-2 text-xs text-gray-500">
                 Affichage {(currentPage - 1) * productsPerPage + 1}-{Math.min(currentPage * productsPerPage, pagination.total || products.length)} De {pagination.total || products.length} Article{(pagination.total || products.length) > 1 ? 's' : ''}
               </div>
-            </div>
+            </motion.div>
 
             {/* Products Grid/List */}
             {loading ? (
@@ -601,9 +621,13 @@ export default function ProductList({ handleselectedProd }) {
                   const isAvailable = product.available !== false && (product.stock || 0) > 0;
 
                   return (
-                    <div
+                    <motion.div
                       key={productId}
-                      className={`bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow ${viewMode === 'list' ? 'flex gap-4' : ''}`}
+                      initial={{ opacity: 0, scale: 0.9 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      whileHover={{ y: -5, scale: 1.02 }}
+                      transition={{ duration: 0.2 }}
+                      className={`bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-2xl transition-all border border-gray-100 ${viewMode === 'list' ? 'flex gap-4' : ''}`}
                     >
                       {/* Product Image */}
                       <div className={`relative ${viewMode === 'list' ? 'w-48 flex-shrink-0' : 'w-full h-48'}`}>
@@ -643,18 +667,18 @@ export default function ProductList({ handleselectedProd }) {
                         {/* Actions - Just View Details */}
                         <div className="mt-auto">
                           <button 
-                            onClick={() => {
-                              navigate(`/Home_seller/Productdetlai/${productId}`);
-                              if (handleselectedProd) handleselectedProd(product);
-                            }}
-                            className="w-full flex items-center justify-center gap-2 py-2 px-4 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-semibold transition-colors"
+                          onClick={() => {
+                            navigate(`/Home_seller/Productdetlai/${productId}`);
+                            if (handleselectedProd) handleselectedProd(product);
+                          }}
+                            className="w-full flex items-center justify-center gap-2 py-2.5 px-4 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white rounded-lg font-semibold transition-all transform hover:scale-105 shadow-md hover:shadow-lg"
                           >
                             <Eye className="w-4 h-4" />
                             Voir les détails
                           </button>
                         </div>
                       </div>
-                    </div>
+                    </motion.div>
                   );
                 })}
               </div>

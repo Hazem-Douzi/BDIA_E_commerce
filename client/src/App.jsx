@@ -33,6 +33,7 @@ import AllClients from "./pages/admin/AllClients.jsx";
 import AllProducts from "./pages/admin/AllProducts.jsx";
 import AllSellers from "./pages/admin/AllSellers.jsx";
 import AllCategories from "./pages/admin/AllCategories.jsx";
+import AllSubCategories from "./pages/admin/AllSubCategories.jsx";
 
 function App() {
   const [products, setProducts] = useState([]);
@@ -98,6 +99,7 @@ function App() {
           <Route path="/Home_admin/All_prod" element={<AllProducts />} />
           <Route path="/Home_admin/All_seller" element={<AllSellers />} />
           <Route path="/Home_admin/All_categories" element={<AllCategories />} />
+          <Route path="/Home_admin/All_subcategories" element={<AllSubCategories />} />
           
           {/* Auth Routes */}
           <Route path="/login" element={<Login />} />
