@@ -80,3 +80,5 @@ logs/
 # Temp files
 *.tmp
 .tmp/
+.vercel
+.env*.local

@@ -1,3 +1,7 @@
+"""
+Catch-all route handler for Flask on Vercel
+This file handles all API routes using Vercel's catch-all syntax [...]
+"""
 import sys
 import os
 
@@ -7,10 +11,6 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from backend import create_app
 
 # Create the Flask app
-# Vercel's @vercel/python automatically detects Flask apps via WSGI
-# The 'app' variable will be used as the WSGI application
 app = create_app()
 
-# For local development
-if __name__ == '__main__':
-    app.run(debug=True)
+# Vercel will automatically use this as the WSGI application
