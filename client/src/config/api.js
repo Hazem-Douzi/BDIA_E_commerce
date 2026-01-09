@@ -1,10 +1,13 @@
 /**
  * Configuration de l'API
  * URL de base et configuration des appels API
+ * Utilise une URL relative en production, absolue en développement
  */
 
+import { API_BASE_URL } from '../utils/api';
+
 export const API_CONFIG = {
-  BASE_URL: "http://127.0.0.1:8080/api",
+  BASE_URL: API_BASE_URL,
   
   ENDPOINTS: {
     // Auth
