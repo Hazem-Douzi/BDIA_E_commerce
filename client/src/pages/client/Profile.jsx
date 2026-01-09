@@ -1,4 +1,4 @@
-import { useNavigate } from 'react-router-dom';
+﻿import { useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { 
@@ -9,6 +9,7 @@ import {
 import Navbar from '../../components/layout/Navbar';
 import Modal from '../../components/common/Modal';
 import { useModal } from '../../hooks/useModal';
+import { buildApiUrl, buildUploadUrl } from '../../utils/api';
 
 const ClientProfile = ({ handleSelectedClient }) => {
   const navigate = useNavigate();
@@ -86,7 +87,7 @@ const ClientProfile = ({ handleSelectedClient }) => {
       }
 
       axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-      const response = await axios.get('http://127.0.0.1:8080/api/client/profile');
+      const response = await axios.get(buildApiUrl("/client/profile"));
       const client = response.data;
 
       // Use total_spent from backend if available (calculated from delivered orders)
@@ -131,7 +132,7 @@ const ClientProfile = ({ handleSelectedClient }) => {
       if (!token) return;
 
       axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-      const response = await axios.get('http://127.0.0.1:8080/api/order/');
+      const response = await axios.get(buildApiUrl("/order/"));
       setOrders(Array.isArray(response.data) ? response.data : []);
       
       // Calculate total spent - only delivered orders (livré suffisant, pas besoin de vérifier payment_status)
@@ -163,7 +164,7 @@ const ClientProfile = ({ handleSelectedClient }) => {
       if (!token) return;
 
       axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-      const response = await axios.get('http://127.0.0.1:8080/api/review/my-reviews');
+      const response = await axios.get(buildApiUrl("/review/my-reviews"));
       const reviewsData = Array.isArray(response.data) ? response.data : [];
       setReviews(reviewsData);
       
@@ -190,7 +191,7 @@ const ClientProfile = ({ handleSelectedClient }) => {
       if (!token) return;
 
       axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-      const response = await axios.get('http://127.0.0.1:8080/api/client/payment-cards');
+      const response = await axios.get(buildApiUrl("/client/payment-cards"));
       const cardsData = Array.isArray(response.data) ? response.data : [];
       setPaymentCards(cardsData);
       // Profile completion will be updated automatically by useEffect
@@ -219,7 +220,7 @@ const ClientProfile = ({ handleSelectedClient }) => {
       
       // Fetch wishlist count from backend
       try {
-        const wishlistRes = await axios.get('http://127.0.0.1:8080/api/wishlist/count');
+        const wishlistRes = await axios.get(buildApiUrl("/wishlist/count"));
         setStats(prev => ({ ...prev, wishlistCount: wishlistRes.data.count || 0 }));
       } catch (wishlistErr) {
         console.error('Error fetching wishlist count:', wishlistErr);
@@ -239,10 +240,10 @@ const ClientProfile = ({ handleSelectedClient }) => {
       axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
       
       if (editingCard) {
-        await axios.put(`http://127.0.0.1:8080/api/client/payment-cards/${editingCard.id_payment_card}`, cardForm);
+        await axios.put(buildApiUrl("/client/payment-cards/${editingCard.id_payment_card}"), cardForm);
         alert('Carte mise à jour avec succès');
       } else {
-        await axios.post('http://127.0.0.1:8080/api/client/payment-cards', cardForm);
+        await axios.post(buildApiUrl("/client/payment-cards"), cardForm);
         showSuccess('Carte ajoutée avec succès');
       }
       
@@ -264,7 +265,7 @@ const ClientProfile = ({ handleSelectedClient }) => {
       if (!token) return;
 
       axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-      await axios.delete(`http://127.0.0.1:8080/api/client/payment-cards/${cardId}`);
+      await axios.delete(buildApiUrl("/client/payment-cards/${cardId}"));
       showSuccess('Carte supprimée avec succès');
       await fetchPaymentCards(); // This will recalculate completion
     } catch (err) {
@@ -292,7 +293,7 @@ const ClientProfile = ({ handleSelectedClient }) => {
         data.password = profileForm.password;
       }
 
-      await axios.put('http://127.0.0.1:8080/api/client/profile', data);
+      await axios.put(buildApiUrl("/client/profile"), data);
       showSuccess('Profil mis à jour avec succès !');
       setShowProfileModal(false);
       await fetchClientData(); // Refresh client data and recalculate completion

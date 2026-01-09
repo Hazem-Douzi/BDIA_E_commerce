@@ -1,8 +1,9 @@
-import React from "react";
+﻿import React from "react";
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import axios from "axios";
 import Navbar from '../../components/layout/Navbar';
+import { buildApiUrl, buildUploadUrl } from '../../utils/api';
 
 
 
@@ -36,7 +37,7 @@ export default function UpdateSeller({selectedSeller}) {
 if (password) data.password = password;
 
 await axios.put(
-  `http://127.0.0.1:8080/api/seller/profile`,
+  buildApiUrl("/seller/profile"),
   data,
   {
     headers: {

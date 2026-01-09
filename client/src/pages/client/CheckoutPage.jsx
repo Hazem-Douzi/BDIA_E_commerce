@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { 
@@ -13,6 +13,7 @@ import {
 import Navbar from '../../components/layout/Navbar';
 import Modal from '../../components/common/Modal';
 import { useModal } from '../../hooks/useModal';
+import { buildApiUrl, buildUploadUrl } from '../../utils/api';
 
 const CheckoutPage = () => {
   const navigate = useNavigate();
@@ -37,12 +38,12 @@ const CheckoutPage = () => {
         axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
         
         // Fetch cart
-        const cartResponse = await axios.get('http://127.0.0.1:8080/api/cart/');
+        const cartResponse = await axios.get(buildApiUrl("/cart/"));
         setCart(cartResponse.data);
 
         // Fetch client data for address
         try {
-          const clientResponse = await axios.get('http://127.0.0.1:8080/api/client/profile');
+          const clientResponse = await axios.get(buildApiUrl("/client/profile"));
           setClientData(clientResponse.data);
         } catch (err) {
           console.error('Failed to fetch client data:', err);
@@ -76,7 +77,7 @@ const CheckoutPage = () => {
       axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
 
       // Create order
-      const orderResponse = await axios.post('http://127.0.0.1:8080/api/order', {});
+      const orderResponse = await axios.post(buildApiUrl("/order"), {});
       const responseData = orderResponse.data;
       
       console.log('Order creation response:', responseData);
@@ -100,7 +101,7 @@ const CheckoutPage = () => {
       // Process payment based on method
       if (paymentMethod === 'cash_on_delivery') {
         // For cash on delivery, create payment with pending status
-        await axios.post(`http://127.0.0.1:8080/api/payment/order/${orderId}`, {
+        await axios.post(buildApiUrl("/payment/order/${orderId}"), {
           method: 'cash_on_delivery'
         });
         
@@ -110,7 +111,7 @@ const CheckoutPage = () => {
         // Create Stripe checkout session and redirect
         // Note: Stripe doesn't support MAD, using USD as fallback
         // You may want to convert the amount or use a different payment provider for MAD
-        const stripeResponse = await axios.post(`http://127.0.0.1:8080/api/payment/stripe/create-checkout`, {
+        const stripeResponse = await axios.post(buildApiUrl("/payment/stripe/create-checkout"), {
           order_id: orderId,
           amount: total,
           currency: 'usd' // Stripe doesn't support MAD, using USD
@@ -222,7 +223,7 @@ const CheckoutPage = () => {
                                      'https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=300&h=300&fit=crop';
                   const imageUrl = productImage.startsWith('http') 
                     ? productImage 
-                    : `http://127.0.0.1:8080/uploads/${productImage}`;
+                    : buildUploadUrl("${productImage}");
 
                   return (
                     <div key={item.id_cart_item} className="flex gap-4 border-b pb-4 last:border-0">

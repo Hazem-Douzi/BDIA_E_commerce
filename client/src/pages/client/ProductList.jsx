@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import axios from "axios";
 import { Heart, ChevronRight, ChevronLeft, LayoutGrid, List, Star, ShoppingCart, Search, Filter as FilterIcon } from 'lucide-react';
@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import Navbar from '../../components/layout/Navbar';
 import Modal from '../../components/common/Modal';
 import { useModal } from '../../hooks/useModal';
+import { buildApiUrl, buildUploadUrl } from '../../utils/api';
 
 export default function ProductList({ handleselectedProd }) {
   const navigate = useNavigate();
@@ -55,7 +56,7 @@ export default function ProductList({ handleselectedProd }) {
 
       try {
         axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-        const response = await axios.get('http://127.0.0.1:8080/api/wishlist/');
+        const response = await axios.get(buildApiUrl("/wishlist/"));
         setWishlist(Array.isArray(response.data) ? response.data : []);
       } catch (error) {
         console.error('Failed to fetch wishlist:', error);
@@ -81,14 +82,14 @@ export default function ProductList({ handleselectedProd }) {
     const fetchCategories = async () => {
       try {
         setLoadingCategories(true);
-        const res = await axios.get("http://127.0.0.1:8080/api/category");
+        const res = await axios.get(buildApiUrl("/category"));
         const categoriesData = Array.isArray(res.data) ? res.data : [];
         setCategories(categoriesData);
         
         // Récupérer les marques depuis le backend (on peut créer un endpoint ou utiliser les produits)
         // Pour l'instant, on va récupérer quelques produits pour obtenir les marques
         try {
-          const brandsRes = await axios.get("http://127.0.0.1:8080/api/product/search?limit=1000");
+          const brandsRes = await axios.get(buildApiUrl("/product/search?limit=1000"));
           if (brandsRes.data && brandsRes.data.products) {
             const uniqueBrands = [...new Set(brandsRes.data.products.map(p => p.brand).filter(Boolean))];
             setBrands(uniqueBrands.sort());
@@ -191,7 +192,7 @@ export default function ProductList({ handleselectedProd }) {
       params.append('perPage', productsPerPage.toString());
       
       // Appel API avec tous les filtres - tout le filtrage est fait en SQL côté backend
-      const response = await axios.get(`http://127.0.0.1:8080/api/product/search?${params.toString()}`);
+      const response = await axios.get(buildApiUrl("/product/search?${params.toString()}"));
       
       if (response.data) {
         // Le backend retourne { products: [], pagination: {} }
@@ -291,7 +292,7 @@ export default function ProductList({ handleselectedProd }) {
 
     try {
       axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-      await axios.post('http://127.0.0.1:8080/api/cart/add', {
+      await axios.post(buildApiUrl("/cart/add"), {
         id_product: product.id_product || product.id,
         quantity: 1
       });
@@ -325,7 +326,7 @@ export default function ProductList({ handleselectedProd }) {
       
       if (isInWishlist) {
         // Remove from wishlist
-        await axios.delete(`http://127.0.0.1:8080/api/wishlist/${productId}`);
+        await axios.delete(buildApiUrl("/wishlist/${productId}"));
         // Update local state
         const updatedWishlist = wishlist.filter(item => {
           const itemId = item.id || item.id_product;
@@ -334,7 +335,7 @@ export default function ProductList({ handleselectedProd }) {
         setWishlist(updatedWishlist);
       } else {
         // Add to wishlist
-        await axios.post(`http://127.0.0.1:8080/api/wishlist/${productId}`);
+        await axios.post(buildApiUrl("/wishlist/${productId}"));
         // Update local state
         setWishlist([...wishlist, product]);
       }

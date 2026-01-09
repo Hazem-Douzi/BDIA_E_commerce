@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { 
@@ -16,6 +16,7 @@ import { motion } from 'framer-motion';
 import Navbar from '../../components/layout/Navbar';
 import Modal from '../../components/common/Modal';
 import { useModal } from '../../hooks/useModal';
+import { buildApiUrl, buildUploadUrl } from '../../utils/api';
 
 const HomePage = ({ products }) => {
   const navigate = useNavigate();
@@ -64,7 +65,7 @@ const HomePage = ({ products }) => {
       }
 
       try {
-        const response = await axios.get('http://127.0.0.1:8080/api/wishlist/', {
+        const response = await axios.get(buildApiUrl("/wishlist/"), {
           headers: {
             'Authorization': `Bearer ${token}`
           }
@@ -95,7 +96,7 @@ const HomePage = ({ products }) => {
     const fetchCategories = async () => {
       try {
         setLoadingCategories(true);
-        const res = await axios.get("http://127.0.0.1:8080/api/category");
+        const res = await axios.get(buildApiUrl("/category"));
         const categoriesData = Array.isArray(res.data) ? res.data : [];
         // Map database categories to format with icons and colors
         const mappedCategories = categoriesData.map((cat, index) => {
@@ -126,7 +127,7 @@ const HomePage = ({ products }) => {
     const fetchTopSellers = async () => {
       try {
         setLoadingSellers(true);
-        const res = await axios.get("http://127.0.0.1:8080/api/product/top-sellers?limit=5");
+        const res = await axios.get(buildApiUrl("/product/top-sellers?limit=5"));
         const sellersData = Array.isArray(res.data) ? res.data : [];
         setTopSellers(sellersData);
       } catch (error) {
@@ -224,7 +225,7 @@ const HomePage = ({ products }) => {
 
     try {
       axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-      await axios.post('http://127.0.0.1:8080/api/cart/add', {
+      await axios.post(buildApiUrl("/cart/add"), {
         id_product: product.id_product || product.id,
         quantity: 1
       });
@@ -258,7 +259,7 @@ const HomePage = ({ products }) => {
       
       if (isInWishlist) {
         // Remove from wishlist
-        await axios.delete(`http://127.0.0.1:8080/api/wishlist/${productId}`);
+        await axios.delete(buildApiUrl("/wishlist/${productId}"));
         // Update local state
         const updatedWishlist = wishlist.filter(item => {
           const itemId = item.id || item.id_product;
@@ -267,7 +268,7 @@ const HomePage = ({ products }) => {
         setWishlist(updatedWishlist);
       } else {
         // Add to wishlist
-        await axios.post(`http://127.0.0.1:8080/api/wishlist/${productId}`);
+        await axios.post(buildApiUrl("/wishlist/${productId}"));
         // Update local state
         setWishlist([...wishlist, product]);
       }
@@ -569,11 +570,11 @@ const HomePage = ({ products }) => {
       <footer className="bg-gray-900 text-white py-12">
         <div className="max-w-7xl mx-auto px-4">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-8">
-            {/* ShopEase Info */}
+            {/* TekShop Info */}
             <div>
               <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
                 <ShoppingBag className="w-6 h-6" />
-                ShopEase
+                TekShop
               </h3>
               <p className="text-gray-400 mb-4">
                 Your trusted online shopping destination for the latest electronics and tech products.
@@ -672,7 +673,7 @@ const HomePage = ({ products }) => {
           <div className="border-t border-gray-800 pt-8 mt-8">
             <div className="flex flex-col md:flex-row justify-between items-center gap-4">
               <p className="text-gray-400 text-sm">
-                © 2025 ShopEase. All rights reserved.
+                © 2025 TekShop. All rights reserved.
               </p>
               <div className="flex gap-6 text-sm text-gray-400">
                 <a href="#" className="hover:text-white transition-colors">Privacy Policy</a>

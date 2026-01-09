@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+﻿import React, { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import axios from "axios";
 import { Plus, Edit, Trash2, ChevronRight, ChevronLeft, FolderTree, Save, X, Filter } from "lucide-react";
@@ -6,6 +6,7 @@ import { motion } from 'framer-motion';
 import Modal from '../../components/common/Modal';
 import { useModal } from '../../hooks/useModal';
 import Navbar from '../../components/layout/Navbar';
+import { buildApiUrl, buildUploadUrl } from '../../utils/api';
 
 export default function AllSubCategories() {
   const navigate = useNavigate();
@@ -48,7 +49,7 @@ export default function AllSubCategories() {
 
   const fetchCategories = async () => {
     try {
-      const res = await axios.get("http://127.0.0.1:8080/api/admin/categories");
+      const res = await axios.get(buildApiUrl("/admin/categories"));
       setCategories(res.data || []);
     } catch (err) {
       console.error("Error fetching categories:", err);
@@ -58,7 +59,7 @@ export default function AllSubCategories() {
   const fetchSubcategories = async () => {
     try {
       setLoading(true);
-      const res = await axios.get("http://127.0.0.1:8080/api/admin/subcategories");
+      const res = await axios.get(buildApiUrl("/admin/subcategories"));
       let allSubcategories = res.data || [];
       
       // Filter by category if a category is selected
@@ -112,7 +113,7 @@ export default function AllSubCategories() {
     if (!validateForm()) return;
 
     try {
-      await axios.post("http://127.0.0.1:8080/api/admin/subcategories", {
+      await axios.post(buildApiUrl("/admin/subcategories"), {
         ...formData,
         id_category: parseInt(formData.id_category)
       });
@@ -144,7 +145,7 @@ export default function AllSubCategories() {
 
     try {
       await axios.put(
-        `http://127.0.0.1:8080/api/admin/subcategories/${editingSubcategory.id_SubCategory}`,
+        buildApiUrl("/admin/subcategories/${editingSubcategory.id_SubCategory}"),
         {
           ...formData,
           id_category: parseInt(formData.id_category)
@@ -168,7 +169,7 @@ export default function AllSubCategories() {
       "Supprimer la sous-catégorie",
       async () => {
         try {
-          await axios.delete(`http://127.0.0.1:8080/api/admin/subcategories/${subcategoryId}`);
+          await axios.delete(buildApiUrl("/admin/subcategories/${subcategoryId}"));
           showSuccess("Sous-catégorie supprimée avec succès !", "Succès");
           fetchSubcategories();
         } catch (err) {

@@ -1,8 +1,9 @@
-import React from "react";
+﻿import React from "react";
 import { useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import axios from 'axios';  
 import '../../App.css';
+import { buildApiUrl, buildUploadUrl } from '../../utils/api';
 
 
 export default function UpdateSeller({selectedClient}) {
@@ -29,7 +30,7 @@ console.log("selectedClient",selectedClient)
       if (password) data.password = password;
 
       await axios.put(
-        "http://127.0.0.1:8080/api/client/profile",
+        buildApiUrl("/client/profile"),
         data,
         {
           headers: {
@@ -67,7 +68,7 @@ console.log("selectedClient",selectedClient)
   return (
     <div>
       <header className="bg-white shadow-md p-4 flex justify-between items-center">
-        <div className="text-xl font-bold text-indigo-600">ShopEase Client</div>
+        <div className="text-xl font-bold text-indigo-600">TekShop Client</div>
         <nav className="space-x-4">
           <button
             onClick={handleHomeClick}

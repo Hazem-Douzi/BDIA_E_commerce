@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from "react";
+﻿import React, { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { 
@@ -19,6 +19,7 @@ import { motion } from 'framer-motion';
 import Modal from '../../components/common/Modal';
 import { useModal } from '../../hooks/useModal';
 import Navbar from '../../components/layout/Navbar';
+import { buildApiUrl, buildUploadUrl } from '../../utils/api';
 
 export default function Home_seller() {
   const navigate = useNavigate();
@@ -56,7 +57,7 @@ export default function Home_seller() {
     }
 
     try {
-      const response = await axios.get('http://127.0.0.1:8080/api/seller/profile', {
+      const response = await axios.get(buildApiUrl("/seller/profile"), {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -76,7 +77,7 @@ export default function Home_seller() {
 
     try {
       setLoading(true);
-      const response = await axios.get('http://127.0.0.1:8080/api/seller/stats', {
+      const response = await axios.get(buildApiUrl("/seller/stats"), {
         headers: {
           'Authorization': `Bearer ${token}`
         }

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { 
@@ -19,6 +19,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import Modal from '../../components/common/Modal';
 import { useModal } from '../../hooks/useModal';
 import Navbar from '../../components/layout/Navbar';
+import { buildApiUrl, buildUploadUrl } from '../../utils/api';
 
 const Orders = () => {
   const navigate = useNavigate();
@@ -41,7 +42,7 @@ const Orders = () => {
 
     try {
       setLoading(true);
-      const response = await axios.get('http://127.0.0.1:8080/api/seller/orders', {
+      const response = await axios.get(buildApiUrl("/seller/orders"), {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -68,7 +69,7 @@ const Orders = () => {
 
     try {
       const response = await axios.put(
-        `http://127.0.0.1:8080/api/seller/orders/${orderId}/status`,
+        buildApiUrl("/seller/orders/${orderId}/status"),
         { order_status: newStatus },
         {
           headers: {

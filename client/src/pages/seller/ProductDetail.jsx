@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+﻿import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
 import { 
@@ -19,6 +19,7 @@ import {
 import Navbar from '../../components/layout/Navbar';
 import Modal from '../../components/common/Modal';
 import { useModal } from '../../hooks/useModal';
+import { buildApiUrl, buildUploadUrl } from '../../utils/api';
 
 export default function ProductDetail({ selectedprod, fetchProducts }) {
   const navigate = useNavigate();
@@ -34,7 +35,7 @@ export default function ProductDetail({ selectedprod, fetchProducts }) {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const catRes = await axios.get(`http://127.0.0.1:8080/api/category`);
+        const catRes = await axios.get(buildApiUrl("/category"));
         const categories = Array.isArray(catRes.data) ? catRes.data : [];
         
         if (product) {
@@ -69,7 +70,7 @@ export default function ProductDetail({ selectedprod, fetchProducts }) {
     const fetchProduct = async () => {
       setLoading(true);
       try {
-        const res = await axios.get(`http://127.0.0.1:8080/api/product/${id}`);
+        const res = await axios.get(buildApiUrl("/product/${id}"));
         const productData = res.data;
         setProduct(productData);
       } catch (error) {
@@ -103,7 +104,7 @@ export default function ProductDetail({ selectedprod, fetchProducts }) {
             return;
           }
 
-          await axios.delete(`http://127.0.0.1:8080/api/product/delete/${productId}`, {
+          await axios.delete(buildApiUrl("/product/delete/${productId}"), {
             headers: {
               'Authorization': `Bearer ${token}`
             }
@@ -153,7 +154,7 @@ export default function ProductDetail({ selectedprod, fetchProducts }) {
   const getImageUrl = (imageUrl) => {
     if (!imageUrl) return 'https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=600&h=600&fit=crop';
     if (imageUrl.startsWith('http')) return imageUrl;
-    return `http://127.0.0.1:8080/uploads/${imageUrl}`;
+    return buildUploadUrl("${imageUrl}");
   };
 
   const productImages = product?.images && product.images.length > 0 

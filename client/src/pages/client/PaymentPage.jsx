@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import axios from 'axios';
 import { Loader2, CheckCircle, XCircle } from 'lucide-react';
 import Navbar from '../../components/layout/Navbar';
+import { buildApiUrl, buildUploadUrl } from '../../utils/api';
 
 const PaymentPage = () => {
   const navigate = useNavigate();
@@ -70,7 +71,7 @@ const PaymentPage = () => {
         axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
 
         // Fetch order details
-        const orderResponse = await axios.get(`http://127.0.0.1:8080/api/order/${orderId}`);
+        const orderResponse = await axios.get(buildApiUrl("/order/${orderId}"));
         setOrder(orderResponse.data);
 
         if (method === 'card') {
@@ -94,7 +95,7 @@ const PaymentPage = () => {
 
   const verifyStripePayment = async (sessionId, orderId) => {
     try {
-      const verifyResponse = await axios.get(`http://127.0.0.1:8080/api/payment/stripe/verify/${sessionId}`);
+      const verifyResponse = await axios.get(buildApiUrl("/payment/stripe/verify/${sessionId}"));
       
       if (verifyResponse.data.verified && verifyResponse.data.payment_status === 'paid') {
         setPaymentStatus('success');
@@ -118,7 +119,7 @@ const PaymentPage = () => {
     try {
       // For now, we'll create a payment with saved card
       // In production, you would integrate with Stripe or another payment processor
-      const paymentResponse = await axios.post(`http://127.0.0.1:8080/api/payment/order/${orderId}`, {
+      const paymentResponse = await axios.post(buildApiUrl("/payment/order/${orderId}"), {
         method: 'card',
         id_transaction: `TXN-${Date.now()}`
       });

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+﻿import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { User, Trash2, Mail, Phone, MapPin, Calendar, ChevronRight } from 'lucide-react';
@@ -6,6 +6,7 @@ import { motion } from 'framer-motion';
 import Modal from '../../components/common/Modal';
 import { useModal } from '../../hooks/useModal';
 import Navbar from '../../components/layout/Navbar';
+import { buildApiUrl, buildUploadUrl } from '../../utils/api';
 
 export default function ClientList() {
   const { modal, showSuccess, showError, showConfirm, closeModal } = useModal();
@@ -24,7 +25,7 @@ export default function ClientList() {
   const fetchClients = async () => {
     try {
       setLoading(true);
-      const res = await axios.get("http://127.0.0.1:8080/api/admin/users/clients");
+      const res = await axios.get(buildApiUrl("/admin/users/clients"));
       setClients(res.data || []);
     } catch (err) {
       console.error("Error fetching clients:", err);
@@ -40,7 +41,7 @@ export default function ClientList() {
       "Supprimer le client",
       async () => {
         try {
-          await axios.delete(`http://127.0.0.1:8080/api/admin/users/${clientId}`);
+          await axios.delete(buildApiUrl("/admin/users/${clientId}"));
           showSuccess("Client supprimé avec succès", "Succès");
           fetchClients();
         } catch (error) {

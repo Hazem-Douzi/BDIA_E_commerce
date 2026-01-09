@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+﻿import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { Package, Trash2, Star, ChevronRight, Eye, MessageCircle, X, ChevronDown, ChevronUp, User } from 'lucide-react';
@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import Modal from '../../components/common/Modal';
 import { useModal } from '../../hooks/useModal';
 import Navbar from '../../components/layout/Navbar';
+import { buildApiUrl, buildUploadUrl } from '../../utils/api';
 
 export default function ProductList() {
   const { modal, showSuccess, showError, showConfirm, closeModal } = useModal();
@@ -27,7 +28,7 @@ export default function ProductList() {
   const fetchProducts = async () => {
     try {
       setLoading(true);
-      const res = await axios.get("http://127.0.0.1:8080/api/admin/products");
+      const res = await axios.get(buildApiUrl("/admin/products"));
       setProducts(res.data || []);
     } catch (err) {
       console.error("Error fetching products:", err);
@@ -43,7 +44,7 @@ export default function ProductList() {
       "Supprimer le produit",
       async () => {
         try {
-          await axios.delete(`http://127.0.0.1:8080/api/admin/products/${productId}`);
+          await axios.delete(buildApiUrl("/admin/products/${productId}"));
           showSuccess("Produit supprimé avec succès", "Succès");
           fetchProducts();
         } catch (error) {
@@ -59,7 +60,7 @@ export default function ProductList() {
 
     try {
       setLoadingReviews(prev => ({ ...prev, [productId]: true }));
-      const res = await axios.get(`http://127.0.0.1:8080/api/review/product/${productId}`);
+      const res = await axios.get(buildApiUrl("/review/product/${productId}"));
       setProductReviews(prev => ({ ...prev, [productId]: res.data || [] }));
     } catch (err) {
       console.error("Error fetching reviews:", err);
@@ -84,10 +85,10 @@ export default function ProductList() {
       "Supprimer le commentaire",
       async () => {
         try {
-          await axios.delete(`http://127.0.0.1:8080/api/admin/reviews/${reviewId}`);
+          await axios.delete(buildApiUrl("/admin/reviews/${reviewId}"));
           showSuccess("Commentaire supprimé avec succès", "Succès");
           // Refresh reviews for this product
-          const res = await axios.get(`http://127.0.0.1:8080/api/review/product/${productId}`);
+          const res = await axios.get(buildApiUrl("/review/product/${productId}"));
           setProductReviews(prev => ({ ...prev, [productId]: res.data || [] }));
           // Refresh products to update ratings
           fetchProducts();
@@ -102,7 +103,7 @@ export default function ProductList() {
   const getImageUrl = (imageUrl) => {
     if (!imageUrl) return 'https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=100&h=100&fit=crop';
     if (imageUrl.startsWith('http')) return imageUrl;
-    return `http://127.0.0.1:8080/uploads/${imageUrl}`;
+    return buildUploadUrl("${imageUrl}");
   };
 
   const renderStars = (rating) => {

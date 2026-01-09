@@ -4,6 +4,7 @@ import axios from 'axios';
 import { Mail, Lock, Loader2, Eye, EyeOff, User } from 'lucide-react';
 import Scene3DBackground from './components/Scene3DBackground';
 import Hero3DDevice from './components/Hero3DDevice';
+import { buildApiUrl } from './utils/api';
 
 const Register = () => {
   const navigate = useNavigate();
@@ -55,7 +56,7 @@ const Register = () => {
     setErrors({});
     
     try {
-      await axios.post('http://127.0.0.1:8080/api/auth/register', {
+      await axios.post(buildApiUrl('/auth/register'), {
         fullName,
         email,
         password,

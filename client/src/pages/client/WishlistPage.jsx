@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { Heart, ShoppingCart, Star, ChevronRight, Trash2, Package } from 'lucide-react';
 import Navbar from '../../components/layout/Navbar';
 import Modal from '../../components/common/Modal';
 import { useModal } from '../../hooks/useModal';
+import { buildApiUrl, buildUploadUrl } from '../../utils/api';
 
 const WishlistPage = () => {
   const navigate = useNavigate();
@@ -29,7 +30,7 @@ const WishlistPage = () => {
         setLoading(true);
         setError(null);
         axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-        const response = await axios.get('http://127.0.0.1:8080/api/wishlist/');
+        const response = await axios.get(buildApiUrl("/wishlist/"));
         console.log('Wishlist API response:', response.data);
         const wishlistData = Array.isArray(response.data) ? response.data : [];
         console.log('Processed wishlist data:', wishlistData);
@@ -67,7 +68,7 @@ const WishlistPage = () => {
 
     try {
       axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-      await axios.delete(`http://127.0.0.1:8080/api/wishlist/${productId}`);
+      await axios.delete(buildApiUrl("/wishlist/${productId}"));
       
       // Update local state
       const updatedWishlist = wishlist.filter(item => {
@@ -95,7 +96,7 @@ const WishlistPage = () => {
 
     try {
       axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-      await axios.post('http://127.0.0.1:8080/api/cart/add', {
+      await axios.post(buildApiUrl("/cart/add"), {
         id_product: product.id_product || product.id,
         quantity: 1
       });
@@ -179,7 +180,7 @@ const WishlistPage = () => {
                     setLoading(true);
                     setError(null);
                     axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-                    const response = await axios.get('http://127.0.0.1:8080/api/wishlist/');
+                    const response = await axios.get(buildApiUrl("/wishlist/"));
                     setWishlist(Array.isArray(response.data) ? response.data : []);
                   } catch (err) {
                     setError(err.response?.data?.message || 'Erreur lors du chargement');
@@ -240,10 +241,12 @@ const WishlistPage = () => {
               }
               
               // Construct full URL if it's a relative path
-              if (productImage && !productImage.startsWith('http') && !productImage.startsWith('/uploads')) {
-                productImage = `http://127.0.0.1:8080/uploads/${productImage}`;
-              } else if (productImage && productImage.startsWith('/uploads')) {
-                productImage = `http://127.0.0.1:8080${productImage}`;
+              if (productImage && !productImage.startsWith('http')) {
+                if (productImage.startsWith('/uploads')) {
+                  productImage = buildUploadUrl(productImage.replace('/uploads/', ''));
+                } else {
+                  productImage = buildUploadUrl(productImage);
+                }
               }
               
               const productDescription = product.product_description || product.description || '';

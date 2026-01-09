@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+﻿import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { Store, Trash2, CheckCircle, XCircle, ChevronRight, User } from 'lucide-react';
@@ -6,6 +6,7 @@ import { motion } from 'framer-motion';
 import Modal from '../../components/common/Modal';
 import { useModal } from '../../hooks/useModal';
 import Navbar from '../../components/layout/Navbar';
+import { buildApiUrl, buildUploadUrl } from '../../utils/api';
 
 export default function SellerList() {
   const { modal, showSuccess, showError, showConfirm, closeModal } = useModal();
@@ -24,7 +25,7 @@ export default function SellerList() {
   const fetchSellers = async () => {
     try {
       setLoading(true);
-      const res = await axios.get("http://127.0.0.1:8080/api/admin/users/sellers");
+      const res = await axios.get(buildApiUrl("/admin/users/sellers"));
       setSellers(res.data || []);
     } catch (err) {
       console.error("Error fetching sellers:", err);
@@ -40,7 +41,7 @@ export default function SellerList() {
       "Supprimer le vendeur",
       async () => {
         try {
-          await axios.delete(`http://127.0.0.1:8080/api/admin/users/${sellerId}`);
+          await axios.delete(buildApiUrl("/admin/users/${sellerId}"));
           showSuccess("Vendeur supprimé avec succès", "Succès");
           fetchSellers();
         } catch (error) {
@@ -53,7 +54,7 @@ export default function SellerList() {
 
   const handleVerifySeller = async (sellerId, status) => {
     try {
-      await axios.put(`http://127.0.0.1:8080/api/admin/sellers/${sellerId}/verification`, {
+      await axios.put(buildApiUrl("/admin/sellers/${sellerId}/verification"), {
         verification_status: status
       });
       showSuccess(`Statut de vérification mis à jour: ${status === 'verified' ? 'Vérifié' : 'Rejeté'}`, "Succès");
